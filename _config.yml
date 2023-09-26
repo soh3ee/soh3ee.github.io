@@ -32,6 +32,10 @@ plugins:
   - jekyll-feed
   - jekyll-toc
 
+markdown: kramdown
+highlighter: rogue
+  input: GFM
+
 permalink: /:categories/:title
 assets: /_assets
 safe: false
@@ -61,6 +65,9 @@ include:
 # sass directory
 sass:
   sass_dir: _sass
+
+redcarpet:
+  extensions: ["no_intra_emphasis", "tables", "autolink", "strikethrough", "with_toc_data"]
 
 
 

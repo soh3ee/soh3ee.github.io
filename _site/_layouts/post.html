@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+
+<html lang="{{ site.locale | default: 'en' }}">
+  <head>
+    <link rel="stylesheet" href="/_assets/css/styles.css"> 
+    <meta charset="utf-8">
+    <title>{{ page.title }}</title>
+  </head>
+  <body class="page-body">
+    <div class="page-body-container">
+      <div class="page-body-content-container">
+        <h1 class="page-title">{{ page.title }}</h1>
+        {% assign words = content | number_of_words %}
+        {% assign read_time = words | divided_by: 180 %}
+        {% if read_time == 1 %}
+            {% assign read_time_label = '1 minute' %}
+        {% else %}
+            {% assign read_time_label = read_time | append: ' minutes' %}
+        {% endif %}
+        
+        <p class="page-date-author-readtime">{{ page.date | date: "%B %e, %Y" }} | {{ read_time_label }} </p>
+      
+        {{ content }}
+
+        {% capture page.image_path %}{% include image_path.html %}{% endcapture %}
+      </div>
+      
+      
+      
+  </div> <!-- page-body-container END-->
+  </body>
+  <script>
+  $(document).ready(function() {
+  var toc = $("#toc"); // target the table of contents element
+  var tocEntries = toc.find("a"); // target the links within the table of contents
+  
+  $(window).scroll(function() {
+    // get the current scroll position of the window
+    var currentPosition = $(this).scrollTop();
+    
+    // loop through each link in the table of contents
+    tocEntries.each(function() {
+      // get the ID of the section of content that this link points to
+      var target = $(this).attr("href");
+      
+      // use the ID to target the corresponding section of content
+      var section = $(target);
+      
+      // if the section exists and its top position is within the current viewport
+      if (section.length && section.offset().top <= currentPosition + 200) {
+        // remove the active class from all links in the table of contents
+        tocEntries.removeClass("active");
+        
+        // add the active class to the link that corresponds to the current section
+        $(this).addClass("active");
+      }
+    });
+  });
+  });
+
+  </script>
+
+</html>
+

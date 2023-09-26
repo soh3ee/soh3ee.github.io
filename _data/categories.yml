@@ -1,0 +1,9 @@
+- name: writeups
+  image_path: /_assets/images/writeups/
+
+- name: programming
+  image_path: /_assets/images/programming/
+
+- name: hacking
+  image_path: /_assets/images/hacking/
+
