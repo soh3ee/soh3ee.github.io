@@ -34,7 +34,6 @@ plugins:
 
 markdown: kramdown
 highlighter: rogue
-  input: GFM
 
 permalink: /:categories/:title
 assets: /_assets
