@@ -33,7 +33,11 @@ plugins:
   - jekyll-toc
 
 markdown: kramdown
-highlighter: rogue
+
+highlighter: rouge
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
 
 permalink: /:categories/:title
 assets: /_assets
