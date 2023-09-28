@@ -37,26 +37,6 @@
   border-left: none;
   border-right: none;
 }
-.header-logo-div {
-  font-size: 26px;
-  margin: 0;
-  line-height: 2em;
-}
-
-.header-logo {
-  text-decoration: none;
-}
-
-.header-items {
-  line-height: 2em;
-  border: none;
-  text-decoration: none;
-}
-
-.header-item {
-  text-decoration: none;
-  color: #888787;
-}
 
 .page-title {
   font-size: 45px;
@@ -72,43 +52,6 @@
   width: fit-content;
   margin-bottom: 4rem;
  }
-
-h1 {
-  font-size: 36px;
-  font-weight: bold;
-  margin-bottom: 2rem; }
-
-h2 {
-  font-size: 32px;
-  font-weight: 500;
-  margin-bottom: 2.5rem; }
-
-h3 {
-  font-size: 25px;
-  font-weight: 500;
-  margin-top: 3.5rem;
-  margin-bottom: 2.5rem; }
-
-p {
-  font-size: 1.1rem;
-  font-weight: 400;
-  letter-spacing: 0.7px;
-  line-height: 1.8;
-  max-width: 100%;
-  margin-bottom: 2.5rem; }
-
-code {
-  font-size: 15px;
-  font-weight: 300;
-  line-height: 1.5;
-  padding-left: 3px;
-  padding-right: 3px;
-  padding-top: 3px;
-  padding-bottom: 3px;
-  margin-bottom: 3rem; }
-
-.inline-links {
-  font-weight: 900; }
 
 .home-body {
   min-height: 97.5vh;
@@ -236,62 +179,6 @@ code {
 .home-categories-button-size {
   display: none; }
 
-.home-categories-terminal {
-  padding-top: 7%;
-  width: 90%;
-  margin: auto; }
-
-.home-categories-terminal-block {
-  font: 1.3rem Inconsolata, monospace;
-  font-size: 16px;
-  overflow: hidden;
-  margin: auto;
-  width: 90%;
-  color: #eae3e3;
-  letter-spacing: .15em;
-  text-shadow: 0 0 5px #C8C8C8;
-  white-space: pre-wrap;
-  word-wrap: break-word; }
-
-#home-categories-terminal-form {
-  margin-top: 7%;
-  margin-bottom: 8px; }
-
-#home-categories-terminal-prompter {
-  opacity: 1;
-  pointer-events: auto;
-  cursor: text;
-  display: inline-block;
-  outline: none;
-  background-color: transparent;
-  border: none;
-  color: transparent;
-  caret-color: white;
-  font: 1.3rem Inconsolata, monospace;
-  font-size: 16px;
-  text-shadow: 0 0 5px #C8C8C8;
-  letter-spacing: .15em;
-  width: auto; }
-
-.home-categories-terminal-prompt {
-  display: none; }
-
-.swag {
-  display: inline-block;
-  overflow: hidden;
-  /* Ensures the content is not revealed until the animation */
-  letter-spacing: .15em;
-  /* Adjust as needed */
-  color: #eae3e3;
-  font: 1.3rem Inconsolata, monospace;
-  font-size: 16px;
-  text-shadow: 0 0 5px #C8C8C8;
-  white-space: pre-wrap;
-  word-wrap: break-word; }
-
-.test {
-  color: #78b0de; }
-
 .home-categories-posts-entry {
   list-style-type: none;
   transition: opacity 0.3s ease-in-out;
@@ -385,12 +272,3 @@ code {
 
 .barrier.inactive {
   display: none; }
-
-.bold {
-  font-weight: 900; }
-
-.underline {
-  text-decoration: underline; }
-
-.post-bottom-margin {
-  margin-bottom: 150px; }

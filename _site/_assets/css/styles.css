@@ -50,12 +50,29 @@ figcaption {
   font-size: 15.75px; }
 
 /* Element: Headings */
-h1, h2 {
-  font-weight: 400; }
+h1 {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 2rem; }
 
-h3, h4, h5, h6 {
-  font-weight: 500; }
+h2 {
+  font-size: 32px;
+  font-weight: 500;
+  margin-bottom: 2.5rem; }
 
+h3 {
+  font-size: 25px;
+  font-weight: 500;
+  margin-top: 3.5rem;
+  margin-bottom: 2.5rem; }
+
+p {
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 0.7px;
+  line-height: 1.8;
+  max-width: 100%;
+  margin-bottom: 2.5rem; }
 
 /* Element: Links */
 a {
@@ -96,10 +113,14 @@ code {
   background-color: #222222; }
 
 code {
-  padding-left: 8px;
-  padding-right: 8px;
-  padding-top: 8px;
-  padding-bottom: 8px; }
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.5;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  margin-bottom: 3rem; }
 
 pre {
   overflow-x: auto; }
@@ -159,3 +180,25 @@ table {
     border-bottom-color: gainsboro; }
   table td {
     border: 1px solid #fbfafa; }
+
+/* Header Elements */
+.header-logo-div {
+  font-size: 26px;
+  margin: 0;
+  line-height: 2em;
+}
+
+.header-logo {
+  text-decoration: none;
+}
+
+.header-items {
+  line-height: 2em;
+  border: none;
+  text-decoration: none;
+}
+
+.header-item {
+  text-decoration: none;
+  color: #888787;
+}
