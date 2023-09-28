@@ -1,36 +1,5 @@
-.logo-container {
-  width: 100%;
-  margin-top: 3%; }
-
-.logo {
-  width: 22%;
-  margin: auto;
-  margin-left: 8%;
-  display: inline-block; }
-
 .body-container {
   margin-top: 3%; }
-
-.numbered-list {
-  margin-left: 20px;
-  color: #948e8e; }
-
-.numbered-list-content-indent {
-  margin-left: 20px; }
-
-a:hover {
-  color: #faf3dd; }
-
-.toc-h3 {
-  padding-left: 15px; }
-
-.page-toc-title {
-  font-size: 15px;
-  font-weight: 600;
-  border-bottom: solid #faf3dd;
-  width: 80%;
-  margin: 0;
-  padding: 0; }
 
 .page-body {
   display: flex;
@@ -103,21 +72,6 @@ a:hover {
   width: fit-content;
   margin-bottom: 4rem;
  }
-
-.page-backwards-button:hover {
-  text-decoration: none;
-  color: #faf3dd; }
-
-.page-backwards-button:visited {
-  text-decoration: none;
-  color: #faf3dd; }
-
-.page-backbutton-text {
-  display: inline;
-  vertical-align: top;
-  text-decoration: none;
-  color: #faf3dd;
-  font-weight: 500; }
 
 h1 {
   font-size: 36px;
