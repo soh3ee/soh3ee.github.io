@@ -14,24 +14,6 @@
         
         
         
-        <p class="page-date-author-readtime">April  1, 2023 | 7 minutes </p>
-      
-        <!DOCTYPE html>
-
-<html lang="en">
-  <head>
-    <link rel="stylesheet" href="/_assets/css/styles.css"> 
-    <meta charset="utf-8">
-    <title>Setting Up Jekyll With Github Pages</title>
-  </head>
-  <body class="page-body">
-    <div class="page-body-container">
-      <div class="page-body-content-container">
-        <h1 class="page-title">Setting Up Jekyll With Github Pages</h1>
-        
-        
-        
-        
         <p class="page-date-author-readtime">March 24, 2023 | 6 minutes </p>
       
         
@@ -194,48 +176,6 @@ git remote add origin https://github.com/&lt;your_github_user&gt;/&lt;your_site_
 git push -U origin main
 </code></pre></div></div>
 <p class="post-bottom-margin">As soon as it pushes, Github should immediately start building your site. And there you have it! Your initial Jekyll setup is complete. If you want to learn about further customization, styling, and understand how Jekyll works, feel free to check out my other posts.</p>
-
-
-
-        
-      </div>
-      
-      
-      
-  </div> <!-- page-body-container END-->
-  </body>
-  <script>
-  $(document).ready(function() {
-  var toc = $("#toc"); // target the table of contents element
-  var tocEntries = toc.find("a"); // target the links within the table of contents
-  
-  $(window).scroll(function() {
-    // get the current scroll position of the window
-    var currentPosition = $(this).scrollTop();
-    
-    // loop through each link in the table of contents
-    tocEntries.each(function() {
-      // get the ID of the section of content that this link points to
-      var target = $(this).attr("href");
-      
-      // use the ID to target the corresponding section of content
-      var section = $(target);
-      
-      // if the section exists and its top position is within the current viewport
-      if (section.length && section.offset().top <= currentPosition + 200) {
-        // remove the active class from all links in the table of contents
-        tocEntries.removeClass("active");
-        
-        // add the active class to the link that corresponds to the current section
-        $(this).addClass("active");
-      }
-    });
-  });
-  });
-
-  </script>
-
-</html>
 
 
 
