@@ -6,10 +6,11 @@
       @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
       </style> 
     <meta charset="utf-8">
-    <title>home</title>
+    <title></title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="/_assets/js/index.js"></script>
   </head>
-    
+
 <body class="home-body">
     <div class="home-body-container">
     <div class="home-left-container">
@@ -25,7 +26,6 @@
             </p>
         </div>
     </div>
-
     <div class="home-right-container">
         <div class="home-categories-buttons">
             <button id="writeup-button" class="home-categories-button active" onclick="openTab(event, 'writeups');"> 
@@ -44,199 +44,120 @@
                     [ 1 ]
                 </span>
             </button>
-            <button id="hacking-button" class="home-categories-button" onclick="openTab(event, 'hacking');"> 
+            <!-- <button id="hacking-button" class="home-categories-button" onclick="openTab(event, 'hacking');"> 
                 <span>
                     hacking 
                 </span> 
                 <span id="writeups-span" class="home-categories-button-size">
                     [ 1 ]
                 </span>
-            </button>
+            </button> -->
         </div>
+        <div id="writeups" class="home-categories home-categories-posts-writeups active "> <!-- content for category 1 (writeups )-->
+    
+    <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/writeups/busqueda">
+        <span class="home-categories-posts-text-date">
+            06/06/2023
+        </span>
+        <span class="home-categories-posts-text-title">
+            Busqueda Writeup
+        </span>
+        <span class="home-categories-posts-text-readtime">
+            
+            
 
-        <!-- CATEGORY POST CONTENT -->
-        <div id="writeups" class="home-categories home-categories-posts-writeups "> <!-- content for category 1 (writeups )-->
-                <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/writeups/busqueda">
-                    <span class="home-categories-posts-text-date">
-                        06/06/2023 
-                    </span>
-                    <span class="home-categories-posts-text-title">
-                        Busqueda Writeup 
-                    </span>
-                    <!-- eventually incorporate tags here?
-                        ex tags: htb, thm, blahblahblah
-                        appears on hover
-                        is a span tag 
-                        display: inline-block
-                    -->
-                    <span class="home-categories-posts-text-readtime">
-                        5 minutes
-                    </span>
-                </a>
-                </li>
-                
             
-                
-                <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/writeups/precious">
-                    <span class="home-categories-posts-text-date">
-                        03/24/2023 
-                    </span>
-                    <span class="home-categories-posts-text-title">
-                        Precious Writeup 
-                    </span>
-                    <!-- eventually incorporate tags here?
-                        ex tags: htb, thm, blahblahblah
-                        appears on hover
-                        is a span tag 
-                        display: inline-block
-                    -->
-                    <span class="home-categories-posts-text-readtime">
-                        
-                        
-                        
-                        
-                        8 minutes
-                    </span>
-                </a>
-                </li>
-                
+            5 minutes
+        </span>
+    </a>
+    </li>
+    
+    <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/writeups/precious">
+        <span class="home-categories-posts-text-date">
+            03/24/2023
+        </span>
+        <span class="home-categories-posts-text-title">
+            Precious Writeup
+        </span>
+        <span class="home-categories-posts-text-readtime">
             
-                
-                <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/writeups/goodgames">
-                    <span class="home-categories-posts-text-date">
-                        03/24/2023 
-                    </span>
-                    <span class="home-categories-posts-text-title">
-                        GoodGames Writeup 
-                    </span>
-                    <!-- eventually incorporate tags here?
-                        ex tags: htb, thm, blahblahblah
-                        appears on hover
-                        is a span tag 
-                        display: inline-block
-                    -->
-                    <span class="home-categories-posts-text-readtime">
-                        
-                        
-                        
-                        
-                        11 minutes
-                    </span>
-                </a>
-                </li>
-                
             
-        </div>
-        <div id="programming" class="home-categories home-categories-posts-programming"> <!-- content for category 2 (programming )-->
-            
-                <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/programming/setting-up-jekyll-with-github-pages">
-                    <span class="home-categories-posts-text-date">
-                        03/24/2023 
-                    </span>
-                    <span class="home-categories-posts-text-title">
-                        Setting Up Jekyll With Github Pages 
-                    </span>
-                    <span class="home-categories-posts-text-readtime">
-                        
-                        
-                        
-                        
-                        6 minutes
-                    </span>
-                </a>
-                </li>
-            
-        </div>
 
+            
+            12 minutes
+        </span>
+    </a>
+    </li>
+    
+    <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/writeups/goodgames">
+        <span class="home-categories-posts-text-date">
+            03/24/2023
+        </span>
+        <span class="home-categories-posts-text-title">
+            GoodGames Writeup
+        </span>
+        <span class="home-categories-posts-text-readtime">
+            
+            
 
-        <div id="hacking" class="home-categories home-categories-posts-hacking"> <!-- content for category 2 (programming )-->
             
-                <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/hacking/getting-started-with-hackthebox">
-                    <span class="home-categories-posts-text-date">
-                        07/12/2023 
-                    </span>
-                    <span class="home-categories-posts-text-title">
-                        getting started with HackTheBox 
-                    </span>
-                    <span class="home-categories-posts-text-readtime">
-                        
-                        
-                        
-                        
-                        1 minute
-                    </span>
-                </a>
-                </li>
-            
-        </div>
-        <div class="barrier">
-            <span></span>
-        </div>
-    </div>
-    <div class="home-right-container-bottom-break">
-    </div>
+            11 minutes
+        </span>
+    </a>
+    </li>
+    
 </div>
 
-<script>
-
-// Function to open the tab content
-function openTab(evt, tabName) {
-    console.log("opentab");
-    // Get all tab content and hide it
-    var categoryContent = document.getElementsByClassName("home-categories");
-    for (var i = 0; i < categoryContent.length; i++) {
-        categoryContent[i].style.display = "none";
-    categoryContent[i].style.display = "none";
-    }
-    console.log(categoryContent);
-
-    // Get all tab links and remove the active class
-    var categoryButton = document.getElementsByClassName("home-categories-button");
-    for (var i = 0; i < categoryButton.length; i++) {
-        categoryButton[i].className = categoryButton[i].className.replace(" active", "");
-    }
-
-    // Show the current tab and add the "active" class to the button that opened the tab
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
+<div id="programming" class="home-categories home-categories-posts-programming "> <!-- content for category 1 (writeups )-->
     
+    <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/programming/setting-up-jekyll-with-github-pages">
+        <span class="home-categories-posts-text-date">
+            03/24/2023
+        </span>
+        <span class="home-categories-posts-text-title">
+            Setting Up Jekyll With Github Pages
+        </span>
+        <span class="home-categories-posts-text-readtime">
+            
+            
+
+            
+            6 minutes
+        </span>
+    </a>
+    </li>
+    
+</div>
+
+
+    </div> <!-- home-right-container -->
+    </div> <!-- home-body-container -->
+<script>
+const buttons = document.querySelectorAll(".home-categories-button"); // Select all buttons
+
+buttons.forEach(function(button) {
+    button.addEventListener("click", function() {
+        clearActiveClasses(); // Clear "active" classes from all buttons and spans
+        button.classList.add("active"); // Add "active" class to the clicked button
+        const span = button.querySelector(".home-categories-button-size");
+        span.classList.add("active"); // Add "active" class to the corresponding span
+    });
+});
+
+function clearActiveClasses() {
+    buttons.forEach(function(button) {
+        button.classList.remove("active"); // Remove "active" class from all buttons
+        const span = button.querySelector(".home-categories-button-size");
+        span.classList.remove("active"); // Remove "active" class from all spans
+    });
 }
-
-    const writeupButton = document.getElementById("writeup-button");
-    const writeupButtonSize = writeupButton.querySelector(".home-categories-button-size");
-    const programmingButton = document.getElementById("programming-button");
-    const programmingButtonSize = programmingButton.querySelector(".home-categories-button-size");
-    const hackingButton = document.getElementById("hacking-button");
-    const hackingButtonSize = hackingButton.querySelector(".home-categories-button-size");
-
-    writeupButton.addEventListener("click", function() {
-        clearActiveClasses();
-        writeupButtonSize.classList.add("active");
-    });
-
-    programmingButton.addEventListener("click", function() {
-        clearActiveClasses();
-        programmingButtonSize.classList.add("active");
-    });
-
-    hackingButton.addEventListener("click", function() {
-        clearActiveClasses();
-        hackingButtonSize.classList.add("active");
-    });
-
-    function clearActiveClasses() {
-        const activeButtons = document.querySelectorAll(".home-categories-button-size.active");
-        activeButtons.forEach(function(button) {
-        button.classList.remove("active");
-        });
-    }
 
 window.onload = function() {
     // Show the writeups content by default when the page loads
     document.getElementById("writeups").style.display = "block";
 }
-</script>
 
+</script>
 </body>
-</html>
+</html> 
 
