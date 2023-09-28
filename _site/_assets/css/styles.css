@@ -173,14 +173,6 @@ table {
 .body-container {
   margin-top: 3%; }
 
-.section-nav {
-  position: sticky;
-  top: 0;
-  height: 50%; }
-
-.toc-entry {
-  list-style-type: "\00BB"; }
-
 .numbered-list {
   margin-left: 20px;
   color: #948e8e; }
@@ -259,35 +251,6 @@ a:hover {
   color: #888787;
 }
 
-/* 
-.post-introduction-container {
-  width: 100%;
-  height: 150px;
-  color: #faf3dd;
-  border-style: solid;
-  border-top-width: 1px;
-  border-bottom-width: 1px;
-  border-left: none;
-  border-right: none;
-  border-color: #383838;
-}
-
-.introduction-title {
-  padding-top: 1rem;
-  font-weight: 600;
-  font-size: 27px;
-  margin-bottom: .25rem;
-}
-
-.introduction-date {
-  font-weight: lighter;
-}
-
-.introduction-content {
-  margin-bottom: .5rem;
-  font-size: 18px;
-  font-weight: 300;
-} */
 .page-title {
   font-size: 45px;
   font-weight: bold;
