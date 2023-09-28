@@ -1,0 +1,49 @@
+<div id="writeups" class="home-categories home-categories-posts-writeups active "> <!-- content for category 1 (writeups )-->
+    {% for post in site.categories.writeups %}
+    <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="{{ post.url }}">
+        <span class="home-categories-posts-text-date">
+            {{ post.date | date: "%m/%d/%Y" }}
+        </span>
+        <span class="home-categories-posts-text-title">
+            {{ post.title }}
+        </span>
+        <span class="home-categories-posts-text-readtime">
+            {% assign words = post.content | number_of_words %}
+            {% assign read_time = words | divided_by: 180 %}
+
+            {% if read_time == 1 %}
+            {% assign read_time_label = '1 minute' %}
+            {% else %}
+            {% assign read_time_label = read_time | append: ' minutes' %}
+            {% endif %}
+            {{ read_time_label }}
+        </span>
+    </a>
+    </li>
+    {% endfor %}
+</div>
+
+<div id="programming" class="home-categories home-categories-posts-programming "> <!-- content for category 1 (writeups )-->
+    {% for post in site.categories.programming %}
+    <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="{{ post.url }}">
+        <span class="home-categories-posts-text-date">
+            {{ post.date | date: "%m/%d/%Y" }}
+        </span>
+        <span class="home-categories-posts-text-title">
+            {{ post.title }}
+        </span>
+        <span class="home-categories-posts-text-readtime">
+            {% assign words = post.content | number_of_words %}
+            {% assign read_time = words | divided_by: 180 %}
+
+            {% if read_time == 1 %}
+            {% assign read_time_label = '1 minute' %}
+            {% else %}
+            {% assign read_time_label = read_time | append: ' minutes' %}
+            {% endif %}
+            {{ read_time_label }}
+        </span>
+    </a>
+    </li>
+    {% endfor %}
+</div>

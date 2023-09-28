@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="/_assets/css/styles.css"> 
+    <meta charset="utf-8">
+    <title>Busqueda Writeup</title>
+  </head>
+  <body class="page-body">
+    <div class="page-body-container">
+      <div class="page-body-content-container">
+        <!-- <h2 class="back-button">&#8592;</h2> -->
+        <header class="post-header-container">
+    <h1 class="header-logo-div">
+        <a href=/ class="header-logo">soh3ee</a>
+    </h1>
+    <nav class="header-items">
+        <a class="header-item">dontclick</a>
+    </nav>
+</header>
+        <h1 class="page-title">Busqueda Writeup</h1>
+        
+        
+        
+        
+        <p class="page-date-author-readtime">June  6, 2023 | 5 minutes </p>
+      
+        
+<p>Busqueda was an Easy Linux machine featuring a vulnerable version of a web application, following with an enjoyable privilege escalation journey. Initial access led to credential exposure of our user. We used this to expose a script we could run as <code class="language-plaintext highlighter-rouge">sudo</code>, which consisted of light code review and eventually path hijacking to obtain <code class="language-plaintext highlighter-rouge">root</code>.</p>
+
+<h2 id="tcp-nmap-scan">TCP Nmap Scan</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Nmap 7.94 scan initiated Wed Jul  5 12:54:30 2023 as: nmap -p- -o nmap.txt 10.10.11.208</span>
+Nmap scan report <span class="k">for </span>10.10.11.208
+Host is up <span class="o">(</span>0.081s latency<span class="o">)</span><span class="nb">.</span>
+Not shown: 65533 closed tcp ports <span class="o">(</span>conn-refused<span class="o">)</span>
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+
+<span class="c"># Nmap done at Wed Jul  5 12:55:37 2023 -- 1 IP address (1 host up) scanned in 67.65 seconds</span>
+</code></pre></div></div>
+
+<h2 id="initial-access">Initial Access</h2>
+<p>Before I could even do a verbose scan (<code class="language-plaintext highlighter-rouge">nmap -sCV ...</code>), I visited the website at <code class="language-plaintext highlighter-rouge">searcher.htb</code> since the IP auto-redirected to the domain which I put into my <code class="language-plaintext highlighter-rouge">/etc/hosts</code>.</p>
+
+<p><img src="/_assets/images/writeups/2023-06-06-busqueda.md/screenshot3.png" alt="" class="img" /></p>
+
+<p>Although I initially messed around with the features of the site which essentially allowed you to select a search engine and make searches through it, what caught my eye was that it was running on Flask and a specific web application called Searchor. They had also kindly provided the version number. With this information I was able to search for <code class="language-plaintext highlighter-rouge">Searchor exploit github</code>, where I landed on this <a href="https://github.com/nikn0laty/Exploit-for-Searchor-2.4.0-Arbitrary-CMD-Injection">POC Python exploit</a>. Surely enough, the version applicability lined up and I ran the exploit in order to receive a reverse shell:</p>
+
+<p><img src="/_assets/images/writeups/2023-06-06-busqueda.md/screenshot5.png" alt="" /></p>
+
+<h2 id="vhost-discovery">VHost Discovery</h2>
+<p>I landed in <code class="language-plaintext highlighter-rouge">/var/www/app</code> which is where the website was being hosted. Looking more closely, I found a <code class="language-plaintext highlighter-rouge">.git</code>
+directory. In the <code class="language-plaintext highlighter-rouge">config</code> file, I found some creds, as well as the virtual host <code class="language-plaintext highlighter-rouge">gitea.searcher.htb</code>.</p>
+
+<p><img src="/_assets/images/writeups/2023-06-06-busqueda.md/screenshot4.png" alt="" /></p>
+
+<p>I added <code class="language-plaintext highlighter-rouge">gitea.searcher.htb</code> to my <code class="language-plaintext highlighter-rouge">/etc/hosts</code> in order to access the site being hosted there. At the site, I’m greeted with <code class="language-plaintext highlighter-rouge">gitea</code>, a self-hosted Git server. I was able to successfully login as <code class="language-plaintext highlighter-rouge">cody</code> here:</p>
+
+<p><img src="/_assets/images/writeups/2023-06-06-busqueda.md/screenshot6.png" alt="" /></p>
+
+<p>I wasn’t able to find anything significant, and I was pretty confident that the files in the <code class="language-plaintext highlighter-rouge">.git</code> directory were synced with the site, therefore I decided to pivot and look around more.</p>
+
+<p>Although the password I found in the git config file is for a user named <code class="language-plaintext highlighter-rouge">cody</code>, password reuse is common and is also present in boxes. Therefore, when I find a password, I like to try them with all the users I have. Since one of the things on my privilege escalation checklist is to check for forbidden and permitted commands for my user with <code class="language-plaintext highlighter-rouge">sudo -l</code>, I tried authenticating with <code class="language-plaintext highlighter-rouge">cody</code>’s password’:</p>
+
+<p><img src="/_assets/images/writeups/2023-06-06-busqueda.md/screenshot7.png" alt="" /></p>
+
+<p>Despite the password corresponding with user <code class="language-plaintext highlighter-rouge">cody</code>, I was able to successfully authenticate as user <code class="language-plaintext highlighter-rouge">svc</code> with the discovered password.</p>
+
+<h2 id="docker-script">Docker Script</h2>
+<p>With the output of <code class="language-plaintext highlighter-rouge">sudo -l</code>, I discovered that I was able to run <code class="language-plaintext highlighter-rouge">/usr/bin/python3 /opt/scripts/system-checkup.py *</code>.
+Running the script as <code class="language-plaintext highlighter-rouge">sudo</code> showed the following:</p>
+
+<p><img src="/_assets/images/writeups/2023-06-06-busqueda.md/screenshot2.png" alt="" /></p>
+
+<p>I try messing with all the options, and I notice that <code class="language-plaintext highlighter-rouge">full-checkup</code> returns <code class="language-plaintext highlighter-rouge">something went wrong</code> no matter the input. I leave it for the moment while I look at the other options.</p>
+
+<p><img src="/_assets/images/writeups/2023-06-06-busqueda.md/screenshot1.png" alt="" /></p>
+
+<p>After doing some research, I discovered that <code class="language-plaintext highlighter-rouge">docker-inspect</code> was likely in reference to the actual <code class="language-plaintext highlighter-rouge">docker inspect</code> command, which returns a set of specified information on a container. The option <code class="language-plaintext highlighter-rouge">docker-inspect</code> expected a specified <code class="language-plaintext highlighter-rouge">format</code> as well as a <code class="language-plaintext highlighter-rouge">container_name</code>. While the names of the 2 existing containers could be found by running <code class="language-plaintext highlighter-rouge">docker-ps</code>, the list of <code class="language-plaintext highlighter-rouge">formats</code> required looking at <code class="language-plaintext highlighter-rouge">docker</code>’s documentation for the command. To confirm that these were the <code class="language-plaintext highlighter-rouge">formats</code> that the script was expecting, I tested a format that would return the IP address of the container:</p>
+
+<p><img src="/_assets/images/writeups/2023-06-06-busqueda.md/screenshot8.png" alt="" /></p>
+
+<p>Success :) So with the <code class="language-plaintext highlighter-rouge">docker-inspect</code> option, I could obtain information on the container… but what information could I even extract? I wasn’t too familiar with the formatting, so I searched up some examples. One of the prominent examples I found was a format that specified environment variables:</p>
+
+<p><img src="/_assets/images/writeups/2023-06-06-busqueda.md/screenshot9.png" alt="" /></p>
+
+<p>Boom, creds B) Not just one password, but two ![[Pasted image 20230705202226.png]]</p>
+
+<p>I attempted logging into the <code class="language-plaintext highlighter-rouge">gitea</code> panel as <code class="language-plaintext highlighter-rouge">administrator</code>, as it was the only other user on the <code class="language-plaintext highlighter-rouge">gitea</code> panel besides <code class="language-plaintext highlighter-rouge">cody</code>:</p>
+
+<p><img src="/_assets/images/writeups/2023-06-06-busqueda.md/screenshot10.png" alt="" /></p>
+
+<p>Hey look, a <code class="language-plaintext highlighter-rouge">scripts</code> repository, the same name as the directory where <code class="language-plaintext highlighter-rouge">system-checkup.py</code> is located. Looking at the directory, I find the source code to the scripts.</p>
+
+<p><img src="/_assets/images/writeups/2023-06-06-busqueda.md/screenshot11.png" alt="" /></p>
+
+<p>Darn, a rookie error! When the option <code class="language-plaintext highlighter-rouge">full-checkup</code> is passed, <code class="language-plaintext highlighter-rouge">system-checkup.py</code> calls the script by relative path. Unfortunately, well, fortunately for me, when relative paths are used, the system searches it’s <code class="language-plaintext highlighter-rouge">PATH</code> variable first, and then the local directory. Since the script is running as <code class="language-plaintext highlighter-rouge">root</code>, it will call <code class="language-plaintext highlighter-rouge">full-checkup.sh</code> as <code class="language-plaintext highlighter-rouge">root</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="bp">...</span>
+
+    <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="sh">'</span><span class="s">full-checkup</span><span class="sh">'</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">arg_list</span> <span class="o">=</span> <span class="p">[</span><span class="sh">'</span><span class="s">./full-checkup.sh</span><span class="sh">'</span><span class="p">]</span>
+            <span class="nf">print</span><span class="p">(</span><span class="nf">run_command</span><span class="p">(</span><span class="n">arg_list</span><span class="p">))</span>
+            <span class="nf">print</span><span class="p">(</span><span class="sh">'</span><span class="s">[+] Done!</span><span class="sh">'</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nf">print</span><span class="p">(</span><span class="sh">'</span><span class="s">Something went wrong</span><span class="sh">'</span><span class="p">)</span>
+            <span class="nf">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="bp">...</span>
+</code></pre></div></div>
+
+<p>Essentially, I can run anything I want as root by:</p>
+<ol>
+  <li>creating my own <code class="language-plaintext highlighter-rouge">full-checkup.sh</code> script</li>
+  <li>exporting a new <code class="language-plaintext highlighter-rouge">PATH</code> location that contains my <code class="language-plaintext highlighter-rouge">full-checkup.sh</code> payload</li>
+  <li>running <code class="language-plaintext highlighter-rouge">system-checkup.py</code> and using the <code class="language-plaintext highlighter-rouge">full-checkup</code> option that will call my payload script rather than the local <code class="language-plaintext highlighter-rouge">.full-checkup.sh</code> script</li>
+</ol>
+
+<p><img src="/_assets/images/writeups/2023-06-06-busqueda.md/screenshot15.png" alt="" /></p>
+
+
+
+        
+      </div>
+      
+      
+      
+  </div> <!-- page-body-container END-->
+  </body>
+  <script>
+  $(document).ready(function() {
+  var toc = $("#toc"); // target the table of contents element
+  var tocEntries = toc.find("a"); // target the links within the table of contents
+  
+  $(window).scroll(function() {
+    // get the current scroll position of the window
+    var currentPosition = $(this).scrollTop();
+    
+    // loop through each link in the table of contents
+    tocEntries.each(function() {
+      // get the ID of the section of content that this link points to
+      var target = $(this).attr("href");
+      
+      // use the ID to target the corresponding section of content
+      var section = $(target);
+      
+      // if the section exists and its top position is within the current viewport
+      if (section.length && section.offset().top <= currentPosition + 200) {
+        // remove the active class from all links in the table of contents
+        tocEntries.removeClass("active");
+        
+        // add the active class to the link that corresponds to the current section
+        $(this).addClass("active");
+      }
+    });
+  });
+  });
+
+  </script>
+
+</html>
+
