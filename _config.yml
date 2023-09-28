@@ -30,7 +30,6 @@ github_username:  soh3ee
 # theme: jekyll-theme
 plugins:
   - jekyll-feed
-  - jekyll-toc
 
 markdown: kramdown
 
@@ -39,31 +38,37 @@ kramdown:
   input: GFM
   syntax_highlighter: rouge
 
-permalink: /:categories/:title
 assets: /_assets
 safe: false
 
 defaults:
-  -
-    scope:
-      path: ""
+  - scope:
+      path: "_posts/writeups"
       type: "posts"
     values:
+      permalink: writeups/:title
       layout: "post"
-      toc: true
-  - 
-    scope:
-      path: ""
-    values: 
-      toc: true
-
+      category: writeups
+  - scope:
+      path: "_posts/programming"
+      type: "posts"
+    values:
+      permalink: programming/:title
+      layout: "post"
+      category: programming
+  # - scope:
+  #     path: "_posts/hacking"
+  #     type: "posts"
+  #   values:
+  #     permalink: hacking/:title
+  #     layout: "post"
+  #     category: hacking 
 
 include:
-  - _writeup
-  - _posts
   - _layouts
   - _assets
   - _sass
+  - _posts
 
 # sass directory
 sass:

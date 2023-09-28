@@ -9,6 +9,15 @@
   <body class="page-body">
     <div class="page-body-container">
       <div class="page-body-content-container">
+        <!-- <h2 class="back-button">&#8592;</h2> -->
+        <header class="post-header-container">
+    <h1 class="header-logo-div">
+        <a href=/ class="header-logo">soh3ee</a>
+    </h1>
+    <nav class="header-items">
+        <a class="header-item">dontclick</a>
+    </nav>
+</header>
         <h1 class="page-title">GoodGames Writeup</h1>
         
         
@@ -40,7 +49,7 @@
 
 <p>Moving on, I tried clicking around the site and analyzed the requests that the site was sending with Burpsuite. I looked at the requests and replies, but nothing really caught my eye. Eventually, I saw myself back at the login page, in which I came to my last resort: SQL injection. I used <code class="language-plaintext highlighter-rouge">burpsuite</code> to confirm the URI path and data parameters:</p>
 
-<p><img src="/_assets/images/writeups/goodgames/burpsuite.png" alt="" /></p>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/burpsuite.png" alt="" /></p>
 
 <h3 id="sqlmap-payload">Sqlmap Payload</h3>
 <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sqlmap <span class="nt">-u</span> <span class="s1">'http://goodgames.htb/login'</span> <span class="nt">--data</span><span class="o">=</span><span class="s2">"email=test@gmail.com&amp;password=test"</span> <span class="nt">--level</span> 5 <span class="nt">--risk</span> 3 <span class="nt">-f</span> <span class="nt">--banner</span> │ <span class="nt">--ignore-code</span> 401
@@ -87,32 +96,32 @@ banner: '</span><span class="mi">8</span><span class="p">.</span><span class="mi
 </code></pre></div></div>
 <p>Creds &lt;3 But I noticed the password was hashed, although it was just a simple MD5 hash. One could pass this hash into a hash cracker like CyberChef and used the “Magic” option to discover the type of hash, but I was able to recognize it and passed it into Crackstation.</p>
 
-<p><img src="/_assets/images/writeups/goodgames/crackstation.png" alt="" /></p>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/crackstation.png" alt="" /></p>
 
 <h2 id="initial-access">Initial Access</h2>
 <p>Using these creds, I logged in to the login page I attacked. After clicking around the new portal, I noticed that one of the links (the gear icon) took me to a new vhost: <code class="language-plaintext highlighter-rouge">internal-administration.goodgames.htb</code>.</p>
 
-<p><img src="/_assets/images/writeups/goodgames/gearicon.png" alt="" /></p>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/gearicon.png" alt="" /></p>
 
-<p><img src="/_assets/images/writeups/goodgames/vhost.png" alt="" /></p>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/vhost.png" alt="" /></p>
 
 <p>I added it to my <code class="language-plaintext highlighter-rouge">/etc/hosts</code> and arrived at another login portal. The first thing I noticed was that this login portal expected different types of credentials. The previous one had been an email, but this one expected a username. Before doing any more deep diving, I tried the same credentials, but in the username, I removed the domain.</p>
 
-<p><img src="/_assets/images/writeups/goodgames/flasklogincreds.png" alt="" /></p>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/flasklogincreds.png" alt="" /></p>
 
 <h3 id="ssti-in-flaskjinja">SSTI in Flask/Jinja</h3>
 <p>More than specifically seeing any potential on this “General Information” page, I used process of elimination, as the other links or buttons had no meaningful action. 
 <em>I often look for keywords that hint at names of technologies and even their versions</em>
 On top of the fact that I could probably exploit the input boxes, I also saw “Flask Volt Dashboard” in the order of the page. So I searched: “Flask Volt Dashboard exploit”.</p>
 
-<p><img src="/_assets/images/writeups/goodgames/dashboard.png" alt="" /></p>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/dashboard.png" alt="" /></p>
 
 <p>I came across this post: https://kleiber.me/blog/2021/10/31/python-flask-jinja2-ssti-example/
 Reading this post made me understand that I could possibly exploit a template that directly called data from a database. Therefore rather than passing the expected data, in this case, a “Full Name”, I could pass data in Jinja’s syntax, that would execute as my payload.</p>
 
 <p>So I tried it:</p>
 
-<p><img src="/_assets/images/writeups/goodgames/flasklogincreds.png" alt="" /></p>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/flasklogincreds.png" alt="" /></p>
 
 <p>And wah-lah, it worked :P! After having POC (Proof of Concept), I used the following exploit to obtain RCE (Remote Code Execution), that would grab a file containing commands for a reverse shell from my attacking machine.</p>
 <ol>
@@ -133,14 +142,14 @@ Reading this post made me understand that I could possibly exploit a template th
 
 <p>And there was my shell! But ew, what the fudge, it looks like I’m in a container ):</p>
 
-<p><img src="/_assets/images/writeups/goodgames/container.png" alt="" /></p>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/container.png" alt="" /></p>
 
 <h3 id="escaping-the-container">Escaping the Container</h3>
 <p>The first thing I did was look around the container. I had landed in <code class="language-plaintext highlighter-rouge">/backend/</code> when I initiated the shell. I looked around but never found anything actually important.</p>
 
 <p>I then progressed to <code class="language-plaintext highlighter-rouge">linpeas</code>. Although it wasn’t highlighted, I notice that there was a user in the home directory?!</p>
 
-<p><img src="/_assets/images/writeups/goodgames/augustus.png" alt="" /></p>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/augustus.png" alt="" /></p>
 
 <p>I was able to read <code class="language-plaintext highlighter-rouge">user.txt</code>, but the thing I was more concerned about was how <code class="language-plaintext highlighter-rouge">/home/augustus</code> existed without being a defined uesr in <code class="language-plaintext highlighter-rouge">/etc/passwd</code> <strong>in the container</strong>.
 <code class="language-plaintext highlighter-rouge">cat /etc/passwd</code></p>
@@ -222,7 +231,7 @@ augustus@GoodGames:~$
 <h2 id="privilege-escalation">Privilege Escalation</h2>
 <p>Looking at the output of <code class="language-plaintext highlighter-rouge">ps aux</code>, I noticed something a bit suspicious. Although I wasn’t entirely familiar with how Docker containers functioned in correlation with their host machines, I knew this was odd. All the commands being run on the container were being run as <code class="language-plaintext highlighter-rouge">root</code> on the host machine!</p>
 
-<p><img src="/_assets/images/writeups/goodgames/everythingroot.png" alt="" /></p>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/everythingroot.png" alt="" /></p>
 
 <p>It’s a bit hard to see, but the Python interactive shell command I just ran is being run as <code class="language-plaintext highlighter-rouge">root</code>. Knowing this, my thought and step process was the following:</p>
 <ol class="numbered-list">
@@ -234,7 +243,7 @@ augustus@GoodGames:~$
 </ol>
 <p><code class="language-plaintext highlighter-rouge">cp /usr/bin cat</code></p>
 
-<p><img src="/_assets/images/writeups/goodgames/catbinary.png" alt="" /></p>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/catbinary.png" alt="" /></p>
 
 <ol start="3" class="numbered-list">
   <li>Set the SUID 
@@ -242,7 +251,7 @@ Set the SUID on the binary to allow execution as <code class="language-plaintext
 </ol>
 <p><code class="language-plaintext highlighter-rouge">chmod +s cat</code></p>
 
-<p><img src="/_assets/images/writeups/goodgames/catbinary.png" alt="" /></p>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/catbinary.png" alt="" /></p>
 
 <ol start="4" class="numbered-list">
   <li>SSH 
@@ -250,7 +259,7 @@ SSH in back into the host machine and read <code class="language-plaintext highl
 <code class="language-plaintext highlighter-rouge">/home/augustus/cat /root/root.txt</code></li>
 </ol>
 
-<p><img src="/_assets/images/writeups/goodgames/root.png" alt="" /></p>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/root.png" alt="" /></p>
 
 
 

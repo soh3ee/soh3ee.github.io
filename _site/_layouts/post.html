@@ -9,6 +9,8 @@
   <body class="page-body">
     <div class="page-body-container">
       <div class="page-body-content-container">
+        <!-- <h2 class="back-button">&#8592;</h2> -->
+        {% include post-introduction.html %}
         <h1 class="page-title">{{ page.title }}</h1>
         {% assign words = content | number_of_words %}
         {% assign read_time = words | divided_by: 180 %}
