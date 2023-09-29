@@ -1,13 +1,15 @@
+<div class="right-container-div">
+<div id="introduction-section-writeups" class="right-container-introduction-section active">
+    <p class="introduction-section-title">Writeups</p>
+    <div class="introduction-section-content">I enjoy doing cybersecurity challenges such as HackTheBox during my free time. From time to time I make writeups demonstrating my thought process because it's cool.</div>
+</div>
 <div id="writeups" class="home-categories home-categories-posts-writeups active "> <!-- content for category 1 (writeups )-->
     {% for post in site.categories.writeups %}
     <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="{{ post.url }}">
-        <span class="home-categories-posts-text-date">
-            {{ post.date | date: "%m/%d/%Y" }}
-        </span>
         <span class="home-categories-posts-text-title">
             {{ post.title }}
         </span>
-        <span class="home-categories-posts-text-readtime">
+        <!-- <span class="home-categories-posts-text-readtime">
             {% assign words = post.content | number_of_words %}
             {% assign read_time = words | divided_by: 180 %}
 
@@ -17,18 +19,22 @@
             {% assign read_time_label = read_time | append: ' minutes' %}
             {% endif %}
             {{ read_time_label }}
+        </span> -->
+        <span class="home-categories-posts-text-date">
+            {{ post.date | date: "%m/%d/%Y" }}
         </span>
     </a>
     </li>
     {% endfor %}
 </div>
 
+<div id="introduction-section-programming" class="right-container-introduction-section">
+    <p class="introduction-section-title">Programming</p>
+    <div class="introduction-section-content">Most my projects require programming. Whether it be a front-dev project, such as this website or a small script, programming is a part of my daily life.</div>
+</div>
 <div id="programming" class="home-categories home-categories-posts-programming "> <!-- content for category 1 (writeups )-->
     {% for post in site.categories.programming %}
     <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="{{ post.url }}">
-        <span class="home-categories-posts-text-date">
-            {{ post.date | date: "%m/%d/%Y" }}
-        </span>
         <span class="home-categories-posts-text-title">
             {{ post.title }}
         </span>
@@ -43,7 +49,11 @@
             {% endif %}
             {{ read_time_label }}
         </span>
+        <span class="home-categories-posts-text-date">
+            {{ post.date | date: "%m/%d/%Y" }}
+        </span>
     </a>
     </li>
     {% endfor %}
+</div>
 </div>

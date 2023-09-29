@@ -1,56 +1,53 @@
-// Function to open the tab content
-function openTab(evt, tabName) {
-    console.log("opentab");
-    // Get all tab content and hide it
-    var categoryContent = document.getElementsByClassName("home-categories");
-    for (var i = 0; i < categoryContent.length; i++) {
-        categoryContent[i].style.display = "none";
-    categoryContent[i].style.display = "none";
-    }
-    console.log(categoryContent);
+function openTab(event, tabName) {
+    var tabButtons = document.getElementsByClassName("nav-section-entry");
+    var tabSpans = document.getElementsByClassName("nav-section-entry-span");
+    var tabs = document.getElementsByClassName("home-categories");
+    var introductionSection = document.getElementsByClassName("right-container-introduction-section");
 
-    // Get all tab links and remove the active class
-    var categoryButton = document.getElementsByClassName("home-categories-button");
-    for (var i = 0; i < categoryButton.length; i++) {
-        categoryButton[i].className = categoryButton[i].className.replace(" active", "");
+    for (var i = 0; i < tabButtons.length; i++) {
+        tabButtons[i].classList.remove("active");
+    }
+    for (var i = 0; i < tabSpans.length; i++) {
+        tabSpans[i].classList.remove("active");
     }
 
-    // Show the current tab and add the "active" class to the button that opened the tab
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
-    
+    event.currentTarget.classList.add("active");
+
+    var tabElement = document.getElementById(tabName);
+
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove("active");
+    }
+    tabElement.classList.add("active");
+
+    for (var i = 0; i < introductionSection.length; i++)
+    {
+        introductionSection[i].classList.remove("active");
+    }
+
+    // Construct the button-count element's ID based on the clicked button's ID
+    var buttonCountId = event.currentTarget.id + "-count";
+    var buttonCountSpan = document.getElementById(buttonCountId);
+
+    if (buttonCountSpan) {
+        buttonCountSpan.classList.add("active");
+    }
+    // introduction-section-writeups
+    var introductionSectionId = "introduction-section-" + tabName;
+    var introductionSectionDiv = document.getElementById(introductionSectionId);
+    console.log(introductionSectionId);
+
+    if (introductionSectionDiv) {
+        introductionSectionDiv.classList.add("active");
+    }
 }
 
-    const writeupButton = document.getElementById("writeup-button");
-    const writeupButtonSize = writeupButton.querySelector(".home-categories-button-size");
-    const programmingButton = document.getElementById("programming-button");
-    const programmingButtonSize = programmingButton.querySelector(".home-categories-button-size");
-    const hackingButton = document.getElementById("hacking-button");
-    const hackingButtonSize = hackingButton.querySelector(".home-categories-button-size");
+document.getElementById("writeups-button").addEventListener("click", function (event) {
+    openTab(event, 'writeups');
+});
 
-    writeupButton.addEventListener("click", function() {
-        clearActiveClasses();
-        writeupButtonSize.classList.add("active");
-    });
+document.getElementById("programming-button").addEventListener("click", function (event) {
+    openTab(event, 'programming');
+});
 
-    programmingButton.addEventListener("click", function() {
-        clearActiveClasses();
-        programmingButtonSize.classList.add("active");
-    });
-
-    hackingButton.addEventListener("click", function() {
-        clearActiveClasses();
-        hackingButtonSize.classList.add("active");
-    });
-
-    function clearActiveClasses() {
-        const activeButtons = document.querySelectorAll(".home-categories-button-size.active");
-        activeButtons.forEach(function(button) {
-        button.classList.remove("active");
-        });
-    }
-
-window.onload = function() {
-    // Show the writeups content by default when the page loads
-    document.getElementById("writeups").style.display = "block";
-}
+// Add event listeners for other buttons if needed
