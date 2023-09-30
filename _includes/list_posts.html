@@ -38,7 +38,7 @@
         <span class="home-categories-posts-text-title">
             {{ post.title }}
         </span>
-        <span class="home-categories-posts-text-readtime">
+        <!-- <span class="home-categories-posts-text-readtime">
             {% assign words = post.content | number_of_words %}
             {% assign read_time = words | divided_by: 180 %}
 
@@ -48,7 +48,7 @@
             {% assign read_time_label = read_time | append: ' minutes' %}
             {% endif %}
             {{ read_time_label }}
-        </span>
+        </span> -->
         <span class="home-categories-posts-text-date">
             {{ post.date | date: "%m/%d/%Y" }}
         </span>
