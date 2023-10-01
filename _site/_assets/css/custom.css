@@ -458,6 +458,9 @@
         text-align: center;
         text-decoration: none;
     }
+    .highlight {
+      white-space: break-spaces;
+    }
 }
   @media screen and (min-width: 1px) and (max-width: 479px) {
      .home-left-container {

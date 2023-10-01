@@ -3,6 +3,7 @@
     background: #222222;
     display: block;
     padding: 10px;
+    /* white-space: break-spaces; */
   }
   
   .highlighter-rouge {
