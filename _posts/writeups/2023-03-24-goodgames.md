@@ -7,10 +7,9 @@ author: "soh3ee"
 categories: writeups
 --- 
 {% assign image_path = site.data.categories[0].image_path %}
-GoodGames was an easy rated box featuring a login page that called unsanitized queries and server side template injection (SSTI). I feel like this box reinforces your fundamentals such as using automated tooling like SQLmap, being weary of any data entry fields, and a touch into the concept of containers (I had never escaped one before this box!).  
-##  TCP Nmap Scan
+# Reconnaissance
 
-```lua
+```shell
 nmap -p- -sCV -o goodgames.txt --min-rate=10000 10.10.11.130
 Warning: 10.10.11.130 giving up on port because retransmission cap hit (10).
 Nmap scan report for 10.10.11.130
@@ -25,11 +24,13 @@ Service Info: Host: goodgames.htb
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 # Nmap done at Tue Mar 21 15:46:24 2023 -- 1 IP address (1 host up) scanned in 27.49 seconds
 ```
-I added `goodgames.htb` to my `/etc/hosts`.
+## Initial Access
+![]({{ image_path }}{{ page.name }}/img1.png)
+The only port that was open was port 80, which is used for web services (`http`). I visited the website and traversed through the site, to see if there was any particular infomrat
 
-I noticed that there was some information about the technology the site was using: `Werkezeug/2.0.2 Python/3.9.2`. `Werkzeug` caught my eyes-- I searched up "Werkzeug 2.0.2 exploits". HackTricks said that if debug is enabled, there could be a URI to the console with `/console`. When I read that, I thought it would be my initial access, but unfortunately I just got a 404 error X_X.
+`Nmap` identified some information about the technology the site was using: Werkezeug/2.0.2 Python/3.9.2. The version number itself, along with the name of technology caught my eyes-- I searched for "Werkzeug 2.0.2 exploits". Looking at HackTricks, it seemed that if debug was enabled, there could be a URI to the console at the `/console` endpoint. I hoped that this would be my initial access, but unfortunately I received a 404 error.
 
-Moving on, I tried clicking around the site and analyzed the requests that the site was sending with Burpsuite. I looked at the requests and replies, but nothing really caught my eye. Eventually, I saw myself back at the login page, in which I came to my last resort: SQL injection. I used `burpsuite` to confirm the URI path and data parameters:
+Moving on, I traversed through the site and analyzed the requests the site was sending using Burpsuite. This didn't result to much, as everything seemed normal. Eventually, I withdrew myself to the login page, in which I came to my last resort: SQL injection. SQL injections are always a possibility with login pages, but I like looking around first before I result to bruteforce options. I used burpsuite to confirm the URI path and data parameters:
 
 ![]({{ image_path }}{{ page.name }}/burpsuite.png)
 

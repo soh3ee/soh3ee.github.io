@@ -28,31 +28,32 @@
         
         
         
-        <p class="page-date-author-readtime">March 24, 2023 | 11 minutes </p>
+        <p class="page-date-author-readtime">March 24, 2023 | 10 minutes </p>
       
         
-<p>GoodGames was an easy rated box featuring a login page that called unsanitized queries and server side template injection (SSTI). I feel like this box reinforces your fundamentals such as using automated tooling like SQLmap, being weary of any data entry fields, and a touch into the concept of containers (I had never escaped one before this box!).</p>
-<h2 id="tcp-nmap-scan">TCP Nmap Scan</h2>
+<h1 id="reconnaissance">Reconnaissance</h1>
 
-<div class="language-lua highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">nmap</span> <span class="o">-</span><span class="n">p</span><span class="o">-</span> <span class="o">-</span><span class="n">sCV</span> <span class="o">-</span><span class="n">o</span> <span class="n">goodgames</span><span class="p">.</span><span class="n">txt</span> <span class="c1">--min-rate=10000 10.10.11.130</span>
-<span class="n">Warning</span><span class="p">:</span> <span class="mi">10</span><span class="p">.</span><span class="mi">10</span><span class="p">.</span><span class="mi">11</span><span class="p">.</span><span class="mi">130</span> <span class="n">giving</span> <span class="n">up</span> <span class="n">on</span> <span class="n">port</span> <span class="n">because</span> <span class="n">retransmission</span> <span class="n">cap</span> <span class="n">hit</span> <span class="p">(</span><span class="mi">10</span><span class="p">).</span>
-<span class="n">Nmap</span> <span class="n">scan</span> <span class="n">report</span> <span class="k">for</span> <span class="mi">10</span><span class="p">.</span><span class="mi">10</span><span class="p">.</span><span class="mi">11</span><span class="p">.</span><span class="mi">130</span>
-<span class="n">Host</span> <span class="n">is</span> <span class="n">up</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">086</span><span class="n">s</span> <span class="n">latency</span><span class="p">).</span>
-<span class="n">Not</span> <span class="n">shown</span><span class="p">:</span> <span class="mi">64418</span> <span class="n">closed</span> <span class="n">tcp</span> <span class="n">ports</span> <span class="p">(</span><span class="n">conn</span><span class="o">-</span><span class="n">refused</span><span class="p">),</span> <span class="mi">1116</span> <span class="n">filtered</span> <span class="n">tcp</span> <span class="n">ports</span> <span class="p">(</span><span class="n">no</span><span class="o">-</span><span class="n">response</span><span class="p">)</span>
-<span class="n">PORT</span>   <span class="n">STATE</span> <span class="n">SERVICE</span> <span class="n">VERSION</span>
-<span class="mi">80</span><span class="o">/</span><span class="n">tcp</span> <span class="n">open</span>  <span class="n">http</span>    <span class="n">Apache</span> <span class="n">httpd</span> <span class="mi">2</span><span class="p">.</span><span class="mi">4</span><span class="p">.</span><span class="mi">51</span>
-<span class="err">|</span><span class="n">_http</span><span class="o">-</span><span class="n">title</span><span class="p">:</span> <span class="n">GoodGames</span> <span class="err">|</span> <span class="n">Community</span> <span class="ow">and</span> <span class="n">Store</span>
-<span class="err">|</span><span class="n">_http</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="n">header</span><span class="p">:</span> <span class="n">Werkzeug</span><span class="o">/</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span> <span class="n">Python</span><span class="o">/</span><span class="mi">3</span><span class="p">.</span><span class="mi">9</span><span class="p">.</span><span class="mi">2</span>
-<span class="n">Service</span> <span class="n">Info</span><span class="p">:</span> <span class="n">Host</span><span class="p">:</span> <span class="n">goodgames</span><span class="p">.</span><span class="n">htb</span>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nmap <span class="nt">-p-</span> <span class="nt">-sCV</span> <span class="nt">-o</span> goodgames.txt <span class="nt">--min-rate</span><span class="o">=</span>10000 10.10.11.130
+Warning: 10.10.11.130 giving up on port because retransmission cap hit <span class="o">(</span>10<span class="o">)</span><span class="nb">.</span>
+Nmap scan report <span class="k">for </span>10.10.11.130
+Host is up <span class="o">(</span>0.086s latency<span class="o">)</span><span class="nb">.</span>
+Not shown: 64418 closed tcp ports <span class="o">(</span>conn-refused<span class="o">)</span>, 1116 filtered tcp ports <span class="o">(</span>no-response<span class="o">)</span>
+PORT   STATE SERVICE VERSION
+80/tcp open  http    Apache httpd 2.4.51
+|_http-title: GoodGames | Community and Store
+|_http-server-header: Werkzeug/2.0.2 Python/3.9.2
+Service Info: Host: goodgames.htb
 
-<span class="n">Service</span> <span class="n">detection</span> <span class="n">performed</span><span class="p">.</span> <span class="n">Please</span> <span class="n">report</span> <span class="n">any</span> <span class="n">incorrect</span> <span class="n">results</span> <span class="n">at</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">nmap</span><span class="p">.</span><span class="n">org</span><span class="o">/</span><span class="n">submit</span><span class="o">/</span> <span class="p">.</span>
-<span class="o">#</span> <span class="n">Nmap</span> <span class="n">done</span> <span class="n">at</span> <span class="n">Tue</span> <span class="n">Mar</span> <span class="mi">21</span> <span class="mi">15</span><span class="p">:</span><span class="mi">46</span><span class="p">:</span><span class="mi">24</span> <span class="mi">2023</span> <span class="c1">-- 1 IP address (1 host up) scanned in 27.49 seconds</span>
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ <span class="nb">.</span>
+<span class="c"># Nmap done at Tue Mar 21 15:46:24 2023 -- 1 IP address (1 host up) scanned in 27.49 seconds</span>
 </code></pre></div></div>
-<p>I added <code class="language-plaintext highlighter-rouge">goodgames.htb</code> to my <code class="language-plaintext highlighter-rouge">/etc/hosts</code>.</p>
+<h2 id="initial-access">Initial Access</h2>
+<p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/img1.png" alt="" />
+The only port that was open was port 80, which is used for web services (<code class="language-plaintext highlighter-rouge">http</code>). I visited the website and traversed through the site, to see if there was any particular infomrat</p>
 
-<p>I noticed that there was some information about the technology the site was using: <code class="language-plaintext highlighter-rouge">Werkezeug/2.0.2 Python/3.9.2</code>. <code class="language-plaintext highlighter-rouge">Werkzeug</code> caught my eyes– I searched up “Werkzeug 2.0.2 exploits”. HackTricks said that if debug is enabled, there could be a URI to the console with <code class="language-plaintext highlighter-rouge">/console</code>. When I read that, I thought it would be my initial access, but unfortunately I just got a 404 error X_X.</p>
+<p><code class="language-plaintext highlighter-rouge">Nmap</code> identified some information about the technology the site was using: Werkezeug/2.0.2 Python/3.9.2. The version number itself, along with the name of technology caught my eyes– I searched for “Werkzeug 2.0.2 exploits”. Looking at HackTricks, it seemed that if debug was enabled, there could be a URI to the console at the <code class="language-plaintext highlighter-rouge">/console</code> endpoint. I hoped that this would be my initial access, but unfortunately I received a 404 error.</p>
 
-<p>Moving on, I tried clicking around the site and analyzed the requests that the site was sending with Burpsuite. I looked at the requests and replies, but nothing really caught my eye. Eventually, I saw myself back at the login page, in which I came to my last resort: SQL injection. I used <code class="language-plaintext highlighter-rouge">burpsuite</code> to confirm the URI path and data parameters:</p>
+<p>Moving on, I traversed through the site and analyzed the requests the site was sending using Burpsuite. This didn’t result to much, as everything seemed normal. Eventually, I withdrew myself to the login page, in which I came to my last resort: SQL injection. SQL injections are always a possibility with login pages, but I like looking around first before I result to bruteforce options. I used burpsuite to confirm the URI path and data parameters:</p>
 
 <p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/burpsuite.png" alt="" /></p>
 
@@ -103,7 +104,7 @@ banner: '</span><span class="mi">8</span><span class="p">.</span><span class="mi
 
 <p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/crackstation.png" alt="" /></p>
 
-<h2 id="initial-access">Initial Access</h2>
+<h2 id="initial-access-1">Initial Access</h2>
 <p>Using these creds, I logged in to the login page I attacked. After clicking around the new portal, I noticed that one of the links (the gear icon) took me to a new vhost: <code class="language-plaintext highlighter-rouge">internal-administration.goodgames.htb</code>.</p>
 
 <p><img src="/_assets/images/writeups/2023-03-24-goodgames.md/gearicon.png" alt="" /></p>

