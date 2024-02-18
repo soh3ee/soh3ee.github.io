@@ -1,0 +1,154 @@
+html, body
+{
+    width: 100% !important;
+    overflow-y: hidden !important;
+}
+
+body
+{
+    display: flex !important;
+    flex-direction: column !important;
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    height: 100vh !important;
+}
+
+.cs-bg-white
+{
+    background-color: #faf3dd !important;
+}
+
+.cs-text-white
+{
+    color: #faf3dd !important;
+}
+
+.cs-text-light-gray
+{
+    color: #9f9c9c !important;
+}
+
+.cs-bg-light-gray
+{
+    color: #9f9c9c !important;
+}
+
+.cs-bg-gray
+{
+    background-color: #222222 !important;
+}
+
+.cs-text-gray
+{
+    color: #222222 !important;
+}
+
+.cs-bg-black
+{
+    background-color: #141515 !important;
+}
+
+.cs-text-black
+{
+    color: #141515 !important;
+}
+
+.cs-bg-brown
+{
+    background-color: #56494c !important;
+}
+
+.cs-text-brown
+{
+    color: #56494c !important;
+}
+
+.cs-bg-transparent
+{
+    background-color: transparent !important;
+}
+
+.cs-text-transparent
+{
+    color: transparent !important;
+}
+
+a:hover
+{
+    color: inherit !important;
+}
+
+.nav-item .active {
+    background-color: #56494c !important; 
+}
+
+@media ((min-width: 0px) and (max-width: 479px))
+{
+    .container 
+    {
+        margin: 0 !important;
+    }
+    .left-container
+    {
+        display: none !important;
+    }
+    .right-container 
+    {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+}
+@media ((min-width: 480px) and (max-width: 719px))
+{
+    .container 
+    {
+        margin: 0 !important;
+    }
+    .left-container
+    {
+        display: none !important;
+    }
+    .right-container
+    {
+        width: 95% !important;
+        margin: 12vh 4vh 4vh 4vh !important;
+    }
+}
+
+@media ((min-width: 720px) and (max-width: 992px))
+{
+    .left-container
+    {
+        display: none !important;
+    }
+    .right-container
+    {
+        
+       margin: 0 !important; 
+    }
+}
+
+@media((min-width: 993px) and (max-width: 1199px))
+{
+    .container
+    {
+        margin-top: 5rem !important; 
+        margin-bottom: 5rem !important;
+    }
+    .right-container
+    {
+        margin-left: auto !important;
+    }
+}
+@media((min-width: 1200px))
+{
+    .container
+    {
+        margin-top: 5rem !important; 
+        margin-bottom: 5rem !important;
+    }
+    .right-container
+    {
+        margin-left: auto !important;
+    }
+}

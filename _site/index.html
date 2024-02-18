@@ -1,194 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <link rel="stylesheet" href="/_assets/css/styles.css"> 
-    <link rel="stylesheet" href="/_assets/css/highlighter.css"> 
-    <link rel="stylesheet" href="/_assets/css/custom.css">  
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title></title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="/_assets/js/index.js"></script>
+    <link rel="stylesheet" href="/_assets/css/new_custom.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/_assets/css/highlighter.css"> 
+    <link href='https://fonts.googleapis.com/css?family=Open Sans' rel='stylesheet'>
   </head>
+  <body class="cs-bg-black">
+    <div class="container h-100 w-100">
+    <div class="row h-100">
+        <!-- side-panel -->
+        <div class="left-container h-100 col-2 pt-3">
+            <!-- side-panel's header -->
+            <div class="mb-5">
+                <a href="/" class="cs-text-white text-decoration-none" style="font-size: 14px;"><strong>soh3ee - 소희</strong></a>
+            </div>
+            <div>
+                <ul class="nav flex-column">
+                    <h5 class="cs-text-light-gray" style="font-size: 12px;">COOL STUFF</h5>
+                    <li class="nav-item py-1">
+                        <a href="#" id="writeupsBtn" class="btn btn-primary cs-bg-transparent active border-0 w-100 text-start" role="button" aria-pressed="false" data-toggle="button" style="font-size: 14px;" tabindex="-1">Writeups</a>
+                    </li>
+                    <!-- <li class="nav-item py-1">
+                        <a href="#" id="programmingBtn" class="btn btn-secondary cs-bg-transparent border-0 w-100 text-start" role="button" aria-pressed="false" data-toggle="button" style="font-size: 14px;" tabindex="-1" role="button">Programming</a>
+                    </li> -->
+                </ul>
 
-<body class="home-body">
-    <div class="home-body-container">
-    <div class="mobile-header">
-        <div class="mobile-header-logo">
-            <a id="header-logo-name" href="/">soh3ee - 소희</a>
-            <a id="header-logo-title" href="/">cyber enthusiast</a>
+                <ul class="nav flex-column pt-5">
+                    <h5 class="cs-text-light-gray" style="font-size: 12px;">SOCIALS</h5>
+                    <li class="nav-item py-1">
+                        <a href="https://github.com/soh3ee" class="btn btn-primary cs-bg-transparent border-0 w-100 text-start" role="button" aria-pressed="false" data-toggle="button" style="font-size: 14px;" tabindex="-1">Github</a>
+                    </li>
+                </ul>
+            </div>
         </div>
 
-        <!-- <div class="dropdown">
-            <button class="dropdown-button">Dropdown svg</button>
-            <div class="dropdown-content">
-                <button onclick="openTab(event, 'writeups')">writeups</button>
-                <button onclick="openTab(event, 'programming')">programming</button> 
-            </div>
-        </div> -->
-    </div>
-    <div class="home-left-container">
-        <div class="left-container">
-            <div class="left-container-header">
-                <a class="left-container-name" href="/">soh3ee - 소희</a>
-                <p class="left-container-title">cyber enthusiast</p>
-            </div>
-            <!-- <p class="home-left-container-center-container-name">soh3ee, 소희</p> -->
-            <nav class="left-container-nav">
-                <div class="nav-section">
-                    <p class="nav-section-title">NERDY THINGS</p>
-                    <button id="writeups-button" class="nav-section-entry active" onclick="openTab(event, 'writeups')">
-                        <span id="writeups-button-name">Writeups</span>
-                        <span id="writeups-button-count" class="nav-section-entry-span active">5</span>
-                    </button>
-                    <button id="programming-button" class="nav-section-entry" onclick="openTab(event, 'programming')">
-                        <span id="programming-button-name">Programming</span>
-                        <span id="programming-button-count" class="nav-section-entry-span">1</span>
-                    </button>
+        <!-- content container -->
+        <div class="right-container overflow-scroll h-100 col-9 cs-bg-gray ps-3 pe-0 ms-auto float-end" style="border-radius: 25px; width: 80%; height: 80vh;">
+            <div style="padding-top: 4rem !important;" class="container px-5 py-5">
+                <div class="row">
+                    <div class="col-3 mx-auto">
+                        <h2 class="cs-text-white">Writeups</h2>
+                    </div>
+                    <div class="col-7 mx-auto">
+                        <p style="color: #b6b5b4 !important; line-height: 1.9; font-size: 15px;">I enjoy doing cybersecurity challenges such as HackTheBox during my free time. From time to time I make writeups demonstrating my thought process because it's cool.</p>
+                    </div>
                 </div>
-                <div id="nav-socials-section" class="nav-section">
-                    <p class="nav-section-title">SOCIALS</p>
-                    <button id="github-button" class="nav-section-entry" onclick="window.location.href='https://github.com/soh3ee';">
-                        github
-                    </button>
-                </div>
-            </nav>
-            <!-- <p class="home-left-container-center-container-title">-- cybersecurity and tech --</p> -->
-            <!-- <p class="home-left-container-center-container-socials">
-                <a href="http://github.com/soh3ee">
-                    <svg class="home-left-container-center-container-socials-logo" width="35" height="35" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" transform="scale(64)" fill="#eae3e3"/>
-                    </svg>
-                </a>
-            </p> -->
+                <div class="px-5">
+    
+        <li style="padding-top: 15px; padding-bottom: 15px;">
+            <a href="/writeups/giddy" class="cs-text-white text-decoration-none" style="font-size: 17px;">
+                <span class="">
+                    Giddy Writeup
+                </span>
+                <span class="text-decoration-none float-end">
+                    08/30/2023
+                </span>
+            </a>
+        </li>
+    
+        <li style="padding-top: 15px; padding-bottom: 15px;">
+            <a href="/writeups/active" class="cs-text-white text-decoration-none" style="font-size: 17px;">
+                <span class="">
+                    Active Writeup
+                </span>
+                <span class="text-decoration-none float-end">
+                    07/30/2023
+                </span>
+            </a>
+        </li>
+    
+        <li style="padding-top: 15px; padding-bottom: 15px;">
+            <a href="/writeups/busqueda" class="cs-text-white text-decoration-none" style="font-size: 17px;">
+                <span class="">
+                    Busqueda Writeup
+                </span>
+                <span class="text-decoration-none float-end">
+                    06/06/2023
+                </span>
+            </a>
+        </li>
+    
+        <li style="padding-top: 15px; padding-bottom: 15px;">
+            <a href="/writeups/precious" class="cs-text-white text-decoration-none" style="font-size: 17px;">
+                <span class="">
+                    Precious Writeup
+                </span>
+                <span class="text-decoration-none float-end">
+                    03/24/2023
+                </span>
+            </a>
+        </li>
+    
+        <li style="padding-top: 15px; padding-bottom: 15px;">
+            <a href="/writeups/goodgames" class="cs-text-white text-decoration-none" style="font-size: 17px;">
+                <span class="">
+                    GoodGames Writeup
+                </span>
+                <span class="text-decoration-none float-end">
+                    03/24/2023
+                </span>
+            </a>
+        </li>
+    
+</div>
+
+<!-- <div class="px-5">
+    
+</div> -->
+            </div>
         </div>
     </div>
-    <div class="home-middle-container">
-    </div>
-    <div class="home-right-container">
-        <div class="right-container-div">
-<div id="introduction-section-writeups" class="right-container-introduction-section active">
-    <p class="introduction-section-title">Writeups</p>
-    <div class="introduction-section-content">I enjoy doing cybersecurity challenges such as HackTheBox during my free time. From time to time I make writeups demonstrating my thought process because it's cool.</div>
-</div>
-<div id="writeups" class="home-categories home-categories-posts-writeups active "> <!-- content for category 1 (writeups )-->
-    
-    <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/writeups/giddy">
-        <span class="home-categories-posts-text-title">
-            Giddy Writeup
-        </span>
-        <!-- <span class="home-categories-posts-text-readtime">
-            
-            
-
-            
-            8 minutes
-        </span> -->
-        <span class="home-categories-posts-text-date">
-            08/30/2023
-        </span>
-    </a>
-    </li>
-    
-    <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/writeups/active">
-        <span class="home-categories-posts-text-title">
-            Active Writeup
-        </span>
-        <!-- <span class="home-categories-posts-text-readtime">
-            
-            
-
-            
-            8 minutes
-        </span> -->
-        <span class="home-categories-posts-text-date">
-            07/30/2023
-        </span>
-    </a>
-    </li>
-    
-    <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/writeups/busqueda">
-        <span class="home-categories-posts-text-title">
-            Busqueda Writeup
-        </span>
-        <!-- <span class="home-categories-posts-text-readtime">
-            
-            
-
-            
-            5 minutes
-        </span> -->
-        <span class="home-categories-posts-text-date">
-            06/06/2023
-        </span>
-    </a>
-    </li>
-    
-    <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/writeups/precious">
-        <span class="home-categories-posts-text-title">
-            Precious Writeup
-        </span>
-        <!-- <span class="home-categories-posts-text-readtime">
-            
-            
-
-            
-            12 minutes
-        </span> -->
-        <span class="home-categories-posts-text-date">
-            03/24/2023
-        </span>
-    </a>
-    </li>
-    
-    <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/writeups/goodgames">
-        <span class="home-categories-posts-text-title">
-            GoodGames Writeup
-        </span>
-        <!-- <span class="home-categories-posts-text-readtime">
-            
-            
-
-            
-            10 minutes
-        </span> -->
-        <span class="home-categories-posts-text-date">
-            03/24/2023
-        </span>
-    </a>
-    </li>
-    
 </div>
 
-<div id="introduction-section-programming" class="right-container-introduction-section">
-    <p class="introduction-section-title">Programming</p>
-    <div class="introduction-section-content">Most my projects require programming. Whether it be a front-dev project, such as this website or a small script, programming is a part of my daily life.</div>
-</div>
-<div id="programming" class="home-categories home-categories-posts-programming "> <!-- content for category 1 (writeups )-->
-    
-    <li class="home-categories-posts-entry"><a class="home-categories-posts-text" href="/programming/setting-up-jekyll-with-github-pages">
-        <span class="home-categories-posts-text-title">
-            Setting Up Jekyll With Github Pages
-        </span>
-        <!-- <span class="home-categories-posts-text-readtime">
-            
-            
+  </body>
+</html>
 
-            
-            6 minutes
-        </span> -->
-        <span class="home-categories-posts-text-date">
-            03/24/2023
-        </span>
-    </a>
-    </li>
-    
-</div>
-</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      // Get the buttons
+      const writeupsBtn = document.getElementById('writeupsBtn');
+      const programmingBtn = document.getElementById('programmingBtn');
 
+      // Add click event listeners
+      writeupsBtn.addEventListener('click', () => {
+          writeupsBtn.classList.add('active');
+          programmingBtn.classList.remove('active'); // Remove active class from other button
+      });
 
-    </div> <!-- home-right-container -->
-    </div> <!-- home-body-container -->
-</body>
-</html> 
+      programmingBtn.addEventListener('click', () => {
+          programmingBtn.classList.add('active');
+          writeupsBtn.classList.remove('active'); // Remove active class from other button
+      });
+  });
+</script>
 

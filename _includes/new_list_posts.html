@@ -1,0 +1,29 @@
+<div class="px-5">
+    {% for post in site.categories.writeups %}
+        <li style="padding-top: 15px; padding-bottom: 15px;">
+            <a href="{{ post.url }}" class="cs-text-white text-decoration-none" style="font-size: 17px;">
+                <span class="">
+                    {{ post.title }}
+                </span>
+                <span class="text-decoration-none float-end">
+                    {{ post.date | date: "%m/%d/%Y" }}
+                </span>
+            </a>
+        </li>
+    {% endfor %}
+</div>
+
+<!-- <div class="px-5">
+    {% for post in site.categories.programming %}
+        <li style="padding-top: 15px; padding-bottom: 15px;">
+            <a href="{{ post.url }}" class="cs-text-white text-decoration-none" style="font-size: 17px;">
+                <span class="">
+                    {{ post.title }}
+                </span>
+                <span class="text-decoration-none float-end">
+                    {{ post.date | date: "%m/%d/%Y" }}
+                </span>
+            </a>
+        </li>
+    {% endfor %}
+</div> -->
