@@ -1,10 +1,15 @@
 ---
 layout: default
 ---
-<div class="container h-100 w-100">
+<div id="index-container" class="container h-100 w-100">
     <div class="row h-100">
         <!-- side-panel -->
-        <div class="left-container h-100 col-2 pt-3">
+        <div id="mobile-left-container" class="w-100 top align-items-center">
+            <div class="">
+                <a href="/" class="cs-text-white text-decoration-none" style="font-size: 14px;"><strong>soh3ee - 소희</strong></a>
+            </div>
+        </div>
+        <div id="left-container" class="h-100 col-2 pt-3">
             <!-- side-panel's header -->
             <div class="mb-5">
                 <a href="/" class="cs-text-white text-decoration-none" style="font-size: 14px;"><strong>soh3ee - 소희</strong></a>
@@ -30,8 +35,8 @@ layout: default
         </div>
 
         <!-- content container -->
-        <div class="right-container overflow-scroll h-100 col-9 cs-bg-gray ps-3 pe-0 ms-auto float-end" style="border-radius: 25px; width: 80%; height: 80vh;">
-            <div style="padding-top: 4rem !important;" class="container px-5 py-5">
+        <div class="right-container overflow-scroll col-9 cs-bg-gray pe-0 float-end" style="border-radius: 25px;">
+            <div id="content-container" style="padding-top: 4rem !important;" class="container px-5 py-5">
                 <div class=row>
                     <div class="col-3 mx-auto">
                         <h2 class="cs-text-white">Writeups</h2>
